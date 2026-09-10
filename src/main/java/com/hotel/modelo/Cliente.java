@@ -5,7 +5,8 @@ import java.util.UUID;
 
 /**
  * Representa a un cliente del hotel.
- * Contiene los datos básicos de contacto necesarios para asociarlo a una Reserva.
+ * Contiene los datos básicos de contacto necesarios para asociarlo a una
+ * Reserva.
  * Implementa Serializable para permitir su persistencia en archivos .dat.
  */
 public class Cliente implements Serializable {

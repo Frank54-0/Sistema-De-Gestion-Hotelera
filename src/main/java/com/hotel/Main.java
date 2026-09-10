@@ -55,7 +55,7 @@ public class Main {
             Date hoy = new Date();
             Date manana = new Date(hoy.getTime() + (24 * 60 * 60 * 1000));
 
-            if (hab101 != null && "DISPONIBLE".equals(hab101.getEstado())) {
+            if (hab101 != null && hab101.estaDisponible()) {
                 Reserva res1 = gestorRes.crearReserva(cliente1, hab101, hoy, manana);
                 System.out.println(">> Reserva creada: " + res1.getId() + " (Cliente: " + cliente1.getNombre() + ")\n");
 
@@ -78,7 +78,7 @@ public class Main {
         System.out.println(">> Prueba de concurrencia: 2 hilos compiten por la habitación 102...\n");
         Habitacion hab102 = gestorHab.obtenerHabitacion(102);
 
-        if (hab102 != null && "DISPONIBLE".equals(hab102.getEstado())) {
+        if (hab102 != null && hab102.estaDisponible()) {
             Runnable intentoReserva = () -> {
                 try {
                     Date hoy = new Date();

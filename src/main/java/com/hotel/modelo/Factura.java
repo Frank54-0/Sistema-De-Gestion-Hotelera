@@ -12,6 +12,11 @@ public class Factura implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
+    /** Estado: la factura aún no ha sido procesada por ProcesadorFacturas. */
+    public static final String PENDIENTE = "PENDIENTE";
+    /** Estado: la factura ya fue generada y persistida. */
+    public static final String PROCESADA = "PROCESADA";
+
     private final String id;
     private Reserva reserva;
     private double total;
@@ -22,17 +27,18 @@ public class Factura implements Serializable {
      * Constructor de Factura.
      * El id se genera automáticamente mediante UUID.
      * El total se calcula automáticamente a partir de la reserva.
-     * La factura nace en estado PENDIENTE hasta que el ProcesadorFacturas la procese.
+     * La factura nace en estado PENDIENTE hasta que el ProcesadorFacturas la
+     * procese.
      *
-     * @param reserva     reserva asociada a la factura
-     * @param formaPago   forma de pago (EFECTIVO, TARJETA, TRANSFERENCIA, etc.)
+     * @param reserva   reserva asociada a la factura
+     * @param formaPago forma de pago (EFECTIVO, TARJETA, TRANSFERENCIA, etc.)
      */
     public Factura(Reserva reserva, String formaPago) {
         this.id = UUID.randomUUID().toString();
         this.reserva = reserva;
         this.total = reserva.calcularTotal();
         this.formaPago = formaPago;
-        this.estado = "PENDIENTE";
+        this.estado = PENDIENTE;
     }
 
     /**
@@ -100,11 +106,12 @@ public class Factura implements Serializable {
 
     /**
      * Genera la factura: marca su estado como PROCESADA.
-     * En el sistema real, esta operación es realizada por ProcesadorFacturas
-     * en un hilo aparte, ya que simula tareas costosas (armar PDF, enviar email, etc.).
+     * En el sistema, esta operación es realizada por ProcesadorFacturas
+     * en un hilo aparte, ya que simula tareas complicadas como:
+     * (armar PDF, enviar email, etc.).
      */
     public void generarFactura() {
-        this.estado = "PROCESADA";
+        this.estado = PROCESADA;
     }
 
     @Override

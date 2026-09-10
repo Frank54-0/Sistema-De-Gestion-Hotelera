@@ -2,8 +2,10 @@ package com.hotel.modelo;
 
 /**
  * Representa una habitación doble del hotel.
- * Una habitación doble está diseñada para dos personas y ofrece más comodidades que la sencilla.
- * Su precio se calcula multiplicando el precio base por el factor de demanda y un factor adicional.
+ * Una habitación doble está diseñada para dos personas y ofrece más comodidades
+ * que la sencilla.
+ * Su precio se calcula multiplicando el precio base por el factor de demanda y
+ * un factor adicional.
  */
 public class HabitacionDoble extends Habitacion {
 

@@ -2,88 +2,61 @@ package com.hotel.dao;
 
 import com.hotel.modelo.Cliente;
 
-import java.io.*;
-import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Clase de acceso a datos (DAO) para la entidad Cliente.
- * Se encarga de persistir y recuperar la lista de clientes usando
- * serialización de objetos en un archivo binario .dat.
- *
- * Capa de Acceso a Datos dentro de la arquitectura por capas del sistema:
- * Presentación → Servicio → DAO → Modelo.
+ * Acceso a datos de la entidad Cliente. Persiste en datos/clientes.dat.
+ * Toda la mecánica de serialización vive en ArchivoDAO; aquí solo quedan
+ * las operaciones propias del negocio de clientes.
  */
-public class ClienteDAO {
+public class ClienteDAO extends ArchivoDAO<Cliente> {
 
-    private static final String RUTA_ARCHIVO = "datos/clientes.dat";
+    private static final String ARCHIVO = "clientes.dat";
 
-    /**
-     * Constructor de ClienteDAO.
-     * Se asegura de que la carpeta de datos exista antes de operar.
-     */
+    /** Construye el DAO apuntando a datos/clientes.dat. */
     public ClienteDAO() {
-        File carpeta = new File("datos");
-        if (!carpeta.exists()) {
-            carpeta.mkdirs();
-        }
+        super(ARCHIVO);
     }
 
     /**
-     * Guarda la lista completa de clientes en el archivo clientes.dat,
-     * sobrescribiendo el contenido anterior.
+     * Guarda la lista completa de clientes, sobrescribiendo la anterior.
      *
      * @param clientes lista de clientes a persistir
      */
-    public synchronized void guardarClientes(List<Cliente> clientes) {
-        try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(RUTA_ARCHIVO))) {
-            oos.writeObject(new ArrayList<>(clientes));
-        } catch (IOException e) {
-            System.err.println("Error al guardar clientes en " + RUTA_ARCHIVO + ": " + e.getMessage());
-        }
+    public void guardarClientes(List<Cliente> clientes) {
+        guardarTodos(clientes);
     }
 
     /**
-     * Carga la lista completa de clientes desde el archivo clientes.dat.
-     * Si el archivo no existe todavía (primera ejecución), retorna una lista vacía.
+     * Carga todos los clientes persistidos.
      *
-     * @return lista de clientes persistidos, o lista vacía si no hay datos previos
+     * @return lista de clientes; vacía si aún no hay datos
      */
-    @SuppressWarnings("unchecked")
-    public synchronized List<Cliente> cargarClientes() {
-        File archivo = new File(RUTA_ARCHIVO);
-        if (!archivo.exists()) {
-            return new ArrayList<>();
-        }
-        try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(archivo))) {
-            return (List<Cliente>) ois.readObject();
-        } catch (IOException | ClassNotFoundException e) {
-            System.err.println("Error al cargar clientes desde " + RUTA_ARCHIVO + ": " + e.getMessage());
-            return new ArrayList<>();
-        }
+    public List<Cliente> cargarClientes() {
+        return cargarTodos();
     }
 
     /**
-     * Agrega un único cliente y persiste la lista actualizada.
-     * Método de conveniencia: carga, agrega, y vuelve a guardar.
+     * Agrega un cliente a los datos persistidos.
      *
-     * @param cliente cliente a agregar y persistir
+     * @param cliente cliente a agregar
      */
-    public synchronized void guardarCliente(Cliente cliente) {
-        List<Cliente> clientes = cargarClientes();
-        clientes.add(cliente);
-        guardarClientes(clientes);
+    public void guardarCliente(Cliente cliente) {
+        agregar(cliente);
     }
 
     /**
-     * Busca un cliente por su id dentro de los datos persistidos.
+     * Busca un cliente por su identificador único.
      *
-     * @param id identificador único del cliente
+     * @param id identificador del cliente
      * @return el cliente si existe, null en caso contrario
      */
-    public synchronized Cliente buscarPorId(String id) {
-        for (Cliente cliente : cargarClientes()) {
-            if (cliente.getId().equals(id)) {
+    public Cliente buscarPorId(String id) {
+        if (id == null) {
+            return null;
+        }
+        for (Cliente cliente : cargarTodos()) {
+            if (id.equals(cliente.getId())) {
                 return cliente;
             }
         }

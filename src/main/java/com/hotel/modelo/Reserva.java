@@ -3,17 +3,26 @@ package com.hotel.modelo;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 
 /**
- * Representa una reserva de habitación en el hotel.
- * Contiene información del cliente, la habitación reservada, fechas, estado y servicios adicionales.
+ * Esta clase representa una reserva de habitación en el hotel.
+ * Contiene información del cliente, la habitación reservada, fechas, estado y
+ * servicios adicionales.
  * Implementa Serializable para permitir su persistencia en archivos .dat.
  */
 public class Reserva implements Serializable {
 
     private static final long serialVersionUID = 1L;
+
+    /** Estado: la reserva está vigente. */
+    public static final String ACTIVA = "ACTIVA";
+    /** Estado: la reserva fue anulada antes del check-in. */
+    public static final String CANCELADA = "CANCELADA";
+    /** Estado: la estadía ya concluyó. */
+    public static final String FINALIZADA = "FINALIZADA";
 
     private final String id;
     private Cliente cliente;
@@ -27,10 +36,10 @@ public class Reserva implements Serializable {
      * Constructor de Reserva.
      * El id se genera automáticamente mediante UUID.
      *
-     * @param cliente        cliente que realiza la reserva
-     * @param habitacion     habitación a reservar
-     * @param fechaEntrada   fecha de check-in
-     * @param fechaSalida    fecha de check-out
+     * @param cliente      cliente que realiza la reserva
+     * @param habitacion   habitación a reservar
+     * @param fechaEntrada fecha de check-in
+     * @param fechaSalida  fecha de check-out
      */
     public Reserva(Cliente cliente, Habitacion habitacion, Date fechaEntrada, Date fechaSalida) {
         this.id = UUID.randomUUID().toString();
@@ -38,7 +47,7 @@ public class Reserva implements Serializable {
         this.habitacion = habitacion;
         this.fechaEntrada = fechaEntrada;
         this.fechaSalida = fechaSalida;
-        this.estado = "ACTIVA";
+        this.estado = ACTIVA;
         this.servicios = new ArrayList<>();
     }
 
@@ -102,7 +111,7 @@ public class Reserva implements Serializable {
      * @return lista de servicios adicionales
      */
     public List<ServicioAdicional> getServicios() {
-        return servicios;
+        return Collections.unmodifiableList(servicios);
     }
 
     /**
@@ -125,11 +134,11 @@ public class Reserva implements Serializable {
      */
     public double calcularTotal() {
         double total = habitacion.calcularPrecio(1.0);
-        
+
         for (ServicioAdicional servicio : servicios) {
             total += servicio.getCosto();
         }
-        
+
         return total;
     }
 
@@ -137,7 +146,16 @@ public class Reserva implements Serializable {
      * Cancela la reserva cambiando su estado a CANCELADA.
      */
     public void cancelar() {
-        this.estado = "CANCELADA";
+        this.estado = CANCELADA;
+    }
+
+    /**
+     * Indica si la reserva sigue vigente.
+     *
+     * @return true si el estado actual es ACTIVA
+     */
+    public boolean estaActiva() {
+        return ACTIVA.equals(estado);
     }
 
     @Override
