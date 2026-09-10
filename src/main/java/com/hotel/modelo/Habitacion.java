@@ -4,13 +4,22 @@ import java.io.Serializable;
 
 /**
  * Clase abstracta que representa una habitación genérica del hotel.
- * Define atributos y métodos comunes a todos los tipos de habitación.
- * Implementa la interfaz Reservable para permitir el cálculo dinámico de precios.
+ * Esta clase define atributos y métodos comunes a todos los tipos de
+ * habitación.
+ * Implementa la interfaz Reservable para permitir el cálculo dinámico de
+ * precios.
  * Implementa Serializable para permitir su persistencia en archivos .dat.
  */
 public abstract class Habitacion implements Reservable, Serializable {
 
     private static final long serialVersionUID = 1L;
+
+    /** Estado: la habitación puede reservarse. */
+    public static final String DISPONIBLE = "DISPONIBLE";
+    /** Estado: la habitación tiene una reserva activa. */
+    public static final String OCUPADA = "OCUPADA";
+    /** Estado: la habitación está fuera de servicio temporalmente. */
+    public static final String MANTENIMIENTO = "MANTENIMIENTO";
 
     protected int numero;
     protected String estado;
@@ -29,7 +38,7 @@ public abstract class Habitacion implements Reservable, Serializable {
         }
         this.numero = numero;
         this.precioBase = precioBase;
-        this.estado = "DISPONIBLE";
+        this.estado = DISPONIBLE;
     }
 
     /**
@@ -57,7 +66,34 @@ public abstract class Habitacion implements Reservable, Serializable {
      * @param estado nuevo estado de la habitación
      */
     public void setEstado(String estado) {
+        if (!esEstadoValido(estado)) {
+            throw new IllegalArgumentException(
+                    "Estado de habitación inválido: '" + estado + "'. Valores permitidos: "
+                            + DISPONIBLE + ", " + OCUPADA + ", " + MANTENIMIENTO);
+        }
         this.estado = estado;
+    }
+
+    /**
+     * Indica si el estado recibido es uno de los tres estados válidos.
+     *
+     * @param estado estado a validar
+     * @return true si el estado es DISPONIBLE, OCUPADA o MANTENIMIENTO
+     */
+    public static boolean esEstadoValido(String estado) {
+        return DISPONIBLE.equals(estado)
+                || OCUPADA.equals(estado)
+                || MANTENIMIENTO.equals(estado);
+    }
+
+    /**
+     * Indica si la habitación se puede reservar en este momento.
+     * Evita que cada capa tenga que comparar cadenas por su cuenta.
+     *
+     * @return true si el estado actual es DISPONIBLE
+     */
+    public boolean estaDisponible() {
+        return DISPONIBLE.equals(estado);
     }
 
     /**

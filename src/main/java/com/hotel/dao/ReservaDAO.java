@@ -2,83 +2,59 @@ package com.hotel.dao;
 
 import com.hotel.modelo.Reserva;
 
-import java.io.*;
-import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Clase de acceso a datos (DAO) para la entidad Reserva.
- * Persiste y recupera la lista de reservas usando serialización
- * de objetos en un archivo binario .dat.
+ * Acceso a datos de la entidad Reserva. Persiste en datos/reservas.dat.
  */
-public class ReservaDAO {
+public class ReservaDAO extends ArchivoDAO<Reserva> {
 
-    private static final String RUTA_ARCHIVO = "datos/reservas.dat";
+    private static final String ARCHIVO = "reservas.dat";
 
-    /**
-     * Constructor de ReservaDAO.
-     * Se asegura de que la carpeta de datos exista antes de operar.
-     */
+    /** Construye el DAO apuntando a datos/reservas.dat. */
     public ReservaDAO() {
-        File carpeta = new File("datos");
-        if (!carpeta.exists()) {
-            carpeta.mkdirs();
-        }
+        super(ARCHIVO);
     }
 
     /**
-     * Guarda la lista completa de reservas en reservas.dat.
+     * Guarda la lista completa de reservas, sobrescribiendo la anterior.
      *
      * @param reservas lista de reservas a persistir
      */
-    public synchronized void guardarReservas(List<Reserva> reservas) {
-        try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(RUTA_ARCHIVO))) {
-            oos.writeObject(new ArrayList<>(reservas));
-        } catch (IOException e) {
-            System.err.println("Error al guardar reservas en " + RUTA_ARCHIVO + ": " + e.getMessage());
-        }
+    public void guardarReservas(List<Reserva> reservas) {
+        guardarTodos(reservas);
     }
 
     /**
-     * Carga la lista completa de reservas desde reservas.dat.
-     * Si el archivo no existe todavía, retorna una lista vacía.
+     * Carga todas las reservas persistidas.
      *
-     * @return lista de reservas persistidas, o lista vacía si no hay datos previos
+     * @return lista de reservas; vacía si aún no hay datos
      */
-    @SuppressWarnings("unchecked")
-    public synchronized List<Reserva> cargarReservas() {
-        File archivo = new File(RUTA_ARCHIVO);
-        if (!archivo.exists()) {
-            return new ArrayList<>();
-        }
-        try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(archivo))) {
-            return (List<Reserva>) ois.readObject();
-        } catch (IOException | ClassNotFoundException e) {
-            System.err.println("Error al cargar reservas desde " + RUTA_ARCHIVO + ": " + e.getMessage());
-            return new ArrayList<>();
-        }
+    public List<Reserva> cargarReservas() {
+        return cargarTodos();
     }
 
     /**
-     * Agrega una única reserva y persiste la lista actualizada.
+     * Agrega una reserva a los datos persistidos.
      *
-     * @param reserva reserva a agregar y persistir
+     * @param reserva reserva a agregar
      */
-    public synchronized void guardarReserva(Reserva reserva) {
-        List<Reserva> reservas = cargarReservas();
-        reservas.add(reserva);
-        guardarReservas(reservas);
+    public void guardarReserva(Reserva reserva) {
+        agregar(reserva);
     }
 
     /**
-     * Busca una reserva por su id dentro de los datos persistidos.
+     * Busca una reserva por su identificador único.
      *
-     * @param id identificador único de la reserva
+     * @param id identificador de la reserva
      * @return la reserva si existe, null en caso contrario
      */
-    public synchronized Reserva buscarPorId(String id) {
-        for (Reserva reserva : cargarReservas()) {
-            if (reserva.getId().equals(id)) {
+    public Reserva buscarPorId(String id) {
+        if (id == null) {
+            return null;
+        }
+        for (Reserva reserva : cargarTodos()) {
+            if (id.equals(reserva.getId())) {
                 return reserva;
             }
         }
@@ -86,19 +62,24 @@ public class ReservaDAO {
     }
 
     /**
-     * Actualiza una reserva existente (por ejemplo tras cancelarla)
-     * reemplazando el registro con el mismo id en el archivo persistido.
+     * Reemplaza en disco la reserva que tenga el mismo id que la recibida.
+     * Se usa, por ejemplo, tras cancelar una reserva.
      *
-     * @param reservaActualizada reserva con los datos actualizados
+     * @param reservaActualizada reserva con los datos ya modificados
+     * @return true si se encontró y actualizó, false si no existía ese id
      */
-    public synchronized void actualizarReserva(Reserva reservaActualizada) {
+    public synchronized boolean actualizarReserva(Reserva reservaActualizada) {
+        if (reservaActualizada == null) {
+            return false;
+        }
         List<Reserva> reservas = cargarReservas();
         for (int i = 0; i < reservas.size(); i++) {
             if (reservas.get(i).getId().equals(reservaActualizada.getId())) {
                 reservas.set(i, reservaActualizada);
-                break;
+                guardarReservas(reservas);
+                return true;
             }
         }
-        guardarReservas(reservas);
+        return false;
     }
 }

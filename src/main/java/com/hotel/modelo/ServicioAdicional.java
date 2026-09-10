@@ -3,8 +3,9 @@ package com.hotel.modelo;
 import java.io.Serializable;
 
 /**
- * Representa un servicio adicional que puede ser incluido en una reserva.
- * Ejemplos: desayuno, spa, lavandería, transporte, etc.
+ * Esta clase representa un servicio adicional que puede ser incluido en una
+ * reserva.
+ * Ej: desayuno, spa, lavandería, transporte, etc.
  * Cada servicio tiene un nombre y un costo asociado.
  * Implementa Serializable para permitir su persistencia en archivos .dat.
  */
@@ -18,7 +19,7 @@ public class ServicioAdicional implements Serializable {
     /**
      * Constructor de ServicioAdicional.
      *
-     * @param nombre nombre del servicio adicional (ej. "Desayuno", "Spa", "Lavandería")
+     * @param nombre nombre del servicio adicional
      * @param costo  costo del servicio en unidades monetarias
      */
     public ServicioAdicional(String nombre, double costo) {

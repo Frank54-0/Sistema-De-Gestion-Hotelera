@@ -2,91 +2,106 @@ package com.hotel.servicio;
 
 import com.hotel.dao.HabitacionDAO;
 import com.hotel.modelo.Habitacion;
+
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
- * Gestiona todas las habitaciones del hotel.
- * Proporciona operaciones para agregar habitaciones, cambiar su estado,
- * y consultar disponibilidad.
+ * Gestiona el inventario de habitaciones del hotel: alta, cambio de estado
+ * y consultas de disponibilidad.
  *
- * Capa de Servicio dentro de la arquitectura por capas del sistema.
- * Delega la persistencia de los datos a HabitacionDAO (capa DAO),
- * de modo que esta clase nunca toca archivos directamente.
+ * Capa de Servicio. Nunca toca archivos directamente: delega la persistencia
+ * en HabitacionDAO.
+ *
+ * Concurrencia: la lista interna se mantiene en memoria y es leída y escrita
+ * por varios hilos, por lo que todos los métodos que la recorren o modifican
+ * están sincronizados sobre esta instancia. Los métodos de consulta también
+ * lo están: recorrer una lista mientras otro hilo la modifica produce
+ * ConcurrentModificationException.
  */
 public class GestorHabitaciones {
 
-    private List<Habitacion> habitaciones;
+    private final List<Habitacion> habitaciones;
     private final HabitacionDAO habitacionDAO;
 
     /**
-     * Constructor de GestorHabitaciones.
-     * Carga automáticamente las habitaciones previamente persistidas
-     * en habitaciones.dat (si existen) mediante HabitacionDAO.
+     * Construye el gestor usando el DAO por defecto y carga el inventario
+     * previamente persistido en datos/habitaciones.dat.
      */
     public GestorHabitaciones() {
-        this.habitacionDAO = new HabitacionDAO();
-        this.habitaciones = habitacionDAO.cargarHabitaciones();
+        this(new HabitacionDAO());
     }
 
     /**
-     * Agrega una nueva habitación al inventario del hotel y persiste
-     * el cambio inmediatamente en habitaciones.dat.
+     * Construye el gestor con un DAO indicado por el llamador.
+     * El constructor permite inyectar un DAO de prueba en los tests
+     * unitarios sin tocar los archivos del sistema.
+     *
+     * @param habitacionDAO DAO encargado de la persistencia
+     */
+    public GestorHabitaciones(HabitacionDAO habitacionDAO) {
+        if (habitacionDAO == null) {
+            throw new IllegalArgumentException("El DAO de habitaciones no puede ser null");
+        }
+        this.habitacionDAO = habitacionDAO;
+        this.habitaciones = new ArrayList<Habitacion>(habitacionDAO.cargarHabitaciones());
+    }
+
+    /**
+     * Agrega una habitación al inventario y persiste el cambio.
+     * Rechaza números duplicados: el número de habitación identifica de forma
+     * única a la habitación dentro del hotel.
      *
      * @param habitacion habitación a agregar
+     * @return true si se agregó, false si era null o el número ya existía
      */
-    public synchronized void agregarHabitacion(Habitacion habitacion) {
-        if (habitacion != null) {
-            habitaciones.add(habitacion);
-            habitacionDAO.guardarHabitaciones(habitaciones);
+    public synchronized boolean agregarHabitacion(Habitacion habitacion) {
+        if (habitacion == null || buscarPorNumero(habitacion.getNumero()) != null) {
+            return false;
         }
+        habitaciones.add(habitacion);
+        habitacionDAO.guardarHabitaciones(habitaciones);
+        return true;
     }
 
     /**
-     * Cambia el estado de una habitación identificada por su número
-     * y persiste el cambio en habitaciones.dat.
-     * Es un método sincronizado porque puede ser invocado desde varios
-     * hilos a la vez (por ejemplo, GestorReservas al confirmar o cancelar reservas).
+     * Cambia el estado de una habitación y persiste el cambio.
      *
      * @param numero número de la habitación
-     * @param estado nuevo estado (DISPONIBLE, OCUPADA, MANTENIMIENTO)
-     * @return true si la habitación fue encontrada y actualizada, false en caso contrario
+     * @param estado nuevo estado; debe ser uno de los definidos en Habitacion
+     * @return true si la habitación existía y fue actualizada
+     * @throws IllegalArgumentException si el estado no es válido
      */
     public synchronized boolean cambiarEstado(int numero, String estado) {
-        for (Habitacion habitacion : habitaciones) {
-            if (habitacion.getNumero() == numero) {
-                habitacion.setEstado(estado);
-                habitacionDAO.guardarHabitaciones(habitaciones);
-                return true;
-            }
+        Habitacion habitacion = buscarPorNumero(numero);
+        if (habitacion == null) {
+            return false;
         }
-        return false;
+        habitacion.setEstado(estado);
+        habitacionDAO.guardarHabitaciones(habitaciones);
+        return true;
     }
 
     /**
      * Obtiene una habitación por su número.
      *
-     * @param numero número de la habitación a buscar
+     * @param numero número de la habitación
      * @return la habitación si existe, null en caso contrario
      */
-    public Habitacion obtenerHabitacion(int numero) {
-        for (Habitacion habitacion : habitaciones) {
-            if (habitacion.getNumero() == numero) {
-                return habitacion;
-            }
-        }
-        return null;
+    public synchronized Habitacion obtenerHabitacion(int numero) {
+        return buscarPorNumero(numero);
     }
 
     /**
-     * Obtiene todas las habitaciones disponibles en el hotel.
+     * Obtiene las habitaciones que se pueden reservar en este momento.
      *
-     * @return lista de habitaciones con estado DISPONIBLE
+     * @return lista de habitaciones en estado DISPONIBLE
      */
-    public List<Habitacion> obtenerHabitacionesDisponibles() {
-        List<Habitacion> disponibles = new ArrayList<>();
+    public synchronized List<Habitacion> obtenerHabitacionesDisponibles() {
+        List<Habitacion> disponibles = new ArrayList<Habitacion>();
         for (Habitacion habitacion : habitaciones) {
-            if ("DISPONIBLE".equals(habitacion.getEstado())) {
+            if (habitacion.estaDisponible()) {
                 disponibles.add(habitacion);
             }
         }
@@ -94,23 +109,23 @@ public class GestorHabitaciones {
     }
 
     /**
-     * Obtiene el total de habitaciones en el hotel.
+     * Total de habitaciones registradas en el hotel.
      *
      * @return cantidad total de habitaciones
      */
-    public int obtenerTotalHabitaciones() {
+    public synchronized int obtenerTotalHabitaciones() {
         return habitaciones.size();
     }
 
     /**
-     * Obtiene el número de habitaciones ocupadas.
+     * Cantidad de habitaciones actualmente ocupadas.
      *
-     * @return cantidad de habitaciones con estado OCUPADA
+     * @return número de habitaciones en estado OCUPADA
      */
-    public int obtenerHabitacionesOcupadas() {
+    public synchronized int obtenerHabitacionesOcupadas() {
         int ocupadas = 0;
         for (Habitacion habitacion : habitaciones) {
-            if ("OCUPADA".equals(habitacion.getEstado())) {
+            if (Habitacion.OCUPADA.equals(habitacion.getEstado())) {
                 ocupadas++;
             }
         }
@@ -118,11 +133,29 @@ public class GestorHabitaciones {
     }
 
     /**
-     * Obtiene todas las habitaciones registradas.
+     * Vista de solo lectura del inventario completo.
+     * Se devuelve inmutable para que ninguna otra capa pueda alterar el
+     * inventario sin pasar por este gestor (y sin persistir el cambio).
      *
-     * @return lista completa de habitaciones
+     * @return lista inmutable de todas las habitaciones
      */
-    public List<Habitacion> obtenerTodasLasHabitaciones() {
-        return new ArrayList<>(habitaciones);
+    public synchronized List<Habitacion> obtenerTodasLasHabitaciones() {
+        return Collections.unmodifiableList(new ArrayList<Habitacion>(habitaciones));
+    }
+
+    /**
+     * Búsqueda interna por número. No sincroniza: siempre se invoca desde
+     * un método que ya tiene el monitor de esta instancia.
+     *
+     * @param numero número de la habitación
+     * @return la habitación o null
+     */
+    private Habitacion buscarPorNumero(int numero) {
+        for (Habitacion habitacion : habitaciones) {
+            if (habitacion.getNumero() == numero) {
+                return habitacion;
+            }
+        }
+        return null;
     }
 }

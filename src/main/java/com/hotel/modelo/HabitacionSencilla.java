@@ -1,8 +1,9 @@
 package com.hotel.modelo;
 
 /**
- * Representa una habitación sencilla del hotel.
- * Una habitación sencilla es la más básica y económica, diseñada para una persona.
+ * Esta clase representa una habitación sencilla del hotel.
+ * Una habitación sencilla es la más básica y económica, diseñada para una
+ * persona.
  * Su precio se calcula aplicando el factor de demanda al precio base.
  */
 public class HabitacionSencilla extends Habitacion {

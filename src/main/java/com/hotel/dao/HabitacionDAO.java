@@ -2,84 +2,57 @@ package com.hotel.dao;
 
 import com.hotel.modelo.Habitacion;
 
-import java.io.*;
-import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Clase de acceso a datos (DAO) para la entidad Habitacion.
- * Persiste y recupera la lista de habitaciones (Sencilla, Doble, Suite)
- * usando serialización de objetos en un archivo binario .dat.
+ * Acceso a datos de la entidad Habitacion. Persiste en datos/habitaciones.dat.
+ * Gracias al polimorfismo, las subclases (HabitacionSencilla, HabitacionDoble,
+ * Suite) se serializan y recuperan con su tipo real sin lógica adicional.
  */
-public class HabitacionDAO {
+public class HabitacionDAO extends ArchivoDAO<Habitacion> {
 
-    private static final String RUTA_ARCHIVO = "datos/habitaciones.dat";
+    private static final String ARCHIVO = "habitaciones.dat";
 
-    /**
-     * Constructor de HabitacionDAO.
-     * Se asegura de que la carpeta de datos exista antes de operar.
-     */
+    /** Construye el DAO apuntando a datos/habitaciones.dat. */
     public HabitacionDAO() {
-        File carpeta = new File("datos");
-        if (!carpeta.exists()) {
-            carpeta.mkdirs();
-        }
+        super(ARCHIVO);
     }
 
     /**
-     * Guarda la lista completa de habitaciones en habitaciones.dat.
-     * Gracias al polimorfismo, cada subclase (HabitacionSencilla, HabitacionDoble, Suite)
-     * se serializa correctamente sin necesidad de lógica adicional.
+     * Guarda el inventario completo de habitaciones, sobrescribiendo el anterior.
      *
      * @param habitaciones lista de habitaciones a persistir
      */
-    public synchronized void guardarHabitaciones(List<Habitacion> habitaciones) {
-        try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(RUTA_ARCHIVO))) {
-            oos.writeObject(new ArrayList<>(habitaciones));
-        } catch (IOException e) {
-            System.err.println("Error al guardar habitaciones en " + RUTA_ARCHIVO + ": " + e.getMessage());
-        }
+    public void guardarHabitaciones(List<Habitacion> habitaciones) {
+        guardarTodos(habitaciones);
     }
 
     /**
-     * Carga la lista completa de habitaciones desde habitaciones.dat.
-     * Si el archivo no existe todavía, retorna una lista vacía.
+     * Carga todas las habitaciones persistidas.
      *
-     * @return lista de habitaciones persistidas, o lista vacía si no hay datos previos
+     * @return lista de habitaciones; vacía si aún no hay datos
      */
-    @SuppressWarnings("unchecked")
-    public synchronized List<Habitacion> cargarHabitaciones() {
-        File archivo = new File(RUTA_ARCHIVO);
-        if (!archivo.exists()) {
-            return new ArrayList<>();
-        }
-        try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(archivo))) {
-            return (List<Habitacion>) ois.readObject();
-        } catch (IOException | ClassNotFoundException e) {
-            System.err.println("Error al cargar habitaciones desde " + RUTA_ARCHIVO + ": " + e.getMessage());
-            return new ArrayList<>();
-        }
+    public List<Habitacion> cargarHabitaciones() {
+        return cargarTodos();
     }
 
     /**
-     * Agrega una única habitación y persiste la lista actualizada.
+     * Agrega una habitación al inventario persistido.
      *
-     * @param habitacion habitación a agregar y persistir
+     * @param habitacion habitación a agregar
      */
-    public synchronized void guardarHabitacion(Habitacion habitacion) {
-        List<Habitacion> habitaciones = cargarHabitaciones();
-        habitaciones.add(habitacion);
-        guardarHabitaciones(habitaciones);
+    public void guardarHabitacion(Habitacion habitacion) {
+        agregar(habitacion);
     }
 
     /**
-     * Busca una habitación por su número dentro de los datos persistidos.
+     * Busca una habitación por su número.
      *
      * @param numero número de la habitación
      * @return la habitación si existe, null en caso contrario
      */
-    public synchronized Habitacion buscarPorNumero(int numero) {
-        for (Habitacion habitacion : cargarHabitaciones()) {
+    public Habitacion buscarPorNumero(int numero) {
+        for (Habitacion habitacion : cargarTodos()) {
             if (habitacion.getNumero() == numero) {
                 return habitacion;
             }
