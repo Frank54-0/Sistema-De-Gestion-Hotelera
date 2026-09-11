@@ -7,12 +7,14 @@
 - JUnit 5
 
 ## Estructura del proyecto
-src/main/java/com/hotel/
-├── modelo/ ← Cliente, Habitacion, Reserva, Factura, ServicioAdicional, Empleado
-├── servicio/ ← GestorReservas, GestorHabitaciones, CalculadorTarifas, ProcesadorFacturas
-├── dao/ ← Persistencia en archivos .dat
-├── excepciones/ ← Excepciones personalizadas
-└── Main.java ← Punto de entrada
+
+Paquetes dentro de `src/main/java/com/hotel/`:
+
+- `modelo/` — Cliente, Habitacion, Reserva, Factura, ServicioAdicional, Empleado
+- `servicio/` — GestorReservas, GestorHabitaciones, CalculadorTarifas, ProcesadorFacturas
+- `dao/` — Persistencia en archivos .dat
+- `excepciones/` — Excepciones personalizadas
+- `Main.java` — Punto de entrada
 
 ## Cómo compilar y ejecutar
 
