@@ -1,7 +1,5 @@
-# Avance 2 – Secciones del Business Analyst
+# Avance 2 
 
-> Borrador para revisar con el Product Owner y el Arquitecto antes de consolidar en el documento final.
-> La columna "Avance 2" indica qué historias se proponen dentro de este avance (según lo que ya existe en el código) y cuáles quedan para avances posteriores.
 
 ## 6. Requerimientos del sistema (Historias de usuario)
 
