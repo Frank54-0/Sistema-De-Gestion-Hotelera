@@ -1,13 +1,21 @@
 package com.hotel;
 
+import com.hotel.controlador.ReservaController;
+import com.hotel.excepciones.HabitacionNoDisponibleException;
 import com.hotel.modelo.*;
-import com.hotel.servicio.CalculadorTarifas;
 import com.hotel.servicio.GestorHabitaciones;
 import com.hotel.servicio.GestorReservas;
 import com.hotel.servicio.ProcesadorFacturas;
-import com.hotel.excepciones.HabitacionNoDisponibleException;
+import com.hotel.vista.VistaReservas;
 
 import java.util.Date;
+import java.util.Scanner;
+
+// Punto de arranque de la aplicación (Avance 2).
+// Main SOLO crea las capas y las conecta entre sí:
+// Servicio (Gestores) -> Control (ReservaController) -> Presentación (VistaReservas).
+// No contiene lógica de negocio ni interacción con el usuario: eso vive en
+// las clases de cada capa correspondiente.
 import java.util.List;
 
 /**
@@ -26,11 +34,13 @@ public class Main {
     public static void main(String[] args) throws InterruptedException {
         System.out.println("=== Sistema de Gestión Hotelera - Avance 2 ===\n");
 
+        // 1. Capa de Servicio: cargan automáticamente datos previos desde datos/*.dat
         // GestorReservas debe recibir el MISMO GestorHabitaciones: con otra instancia
         // habría dos copias de cada habitación y sus estados se desincronizarían.
         GestorHabitaciones gestorHab = new GestorHabitaciones();
         GestorReservas gestorRes = new GestorReservas(gestorHab);
 
+        // 2. Si es la primera ejecución, se crean habitaciones iniciales
         System.out.println(">> Datos cargados desde persistencia (.dat):");
         System.out.println("   Habitaciones ya registradas: " + gestorHab.obtenerTotalHabitaciones());
         System.out.println("   Reservas ya registradas: " + gestorRes.obtenerTotalReservas() + "\n");
@@ -40,29 +50,36 @@ public class Main {
             gestorHab.agregarHabitacion(new HabitacionSencilla(101, 100.0));
             gestorHab.agregarHabitacion(new HabitacionDoble(102, 150.0));
             gestorHab.agregarHabitacion(new Suite(201, 300.0));
-            System.out.println("✓ " + gestorHab.obtenerTotalHabitaciones() + " habitaciones creadas y persistidas en datos/habitaciones.dat\n");
+            System.out.println("Habitaciones creadas y persistidas en datos/habitaciones.dat\n");
         }
 
+        // 3. Hilo en segundo plano para procesar facturas
         ProcesadorFacturas procesador = new ProcesadorFacturas();
         procesador.start();
-        System.out.println(">> Hilo ProcesadorFacturas iniciado en segundo plano.\n");
 
+        // 4. Prueba de sincronización: dos hilos compiten por la habitación 102.
+        //    Se conserva como evidencia de que crearReserva() es thread-safe.
+        ejecutarPruebaConcurrencia(gestorHab, gestorRes);
         Cliente cliente1 = new Cliente("Juan Pérez", "7777-1234", "juan@example.com");
         Cliente cliente2 = new Cliente("María García", "7777-5678", "maria@example.com");
 
-        Habitacion hab101 = gestorHab.obtenerHabitacion(101);
+        // 5. Capa de Control: el Controller conecta la Vista con el Servicio
+        ReservaController reservaController = new ReservaController(gestorRes, gestorHab);
 
-        try {
-            Date hoy = new Date();
-            Date manana = new Date(hoy.getTime() + (24 * 60 * 60 * 1000));
+        // 6. Capa de Presentación: el usuario solo interactúa con la Vista
+        Scanner scanner = new Scanner(System.in);
+        VistaReservas vista = new VistaReservas(reservaController, scanner);
+        vista.iniciar();
 
-            if (hab101 != null && hab101.estaDisponible()) {
-                Reserva res1 = gestorRes.crearReserva(cliente1, hab101, hoy, manana);
-                System.out.println(">> Reserva creada: " + res1.getId() + " (Cliente: " + cliente1.getNombre() + ")\n");
+        // 7. Al salir del menú, se detiene el hilo en segundo plano
+        procesador.detener();
+        procesador.join();
 
-                ServicioAdicional desayuno = new ServicioAdicional("Desayuno", 15.0);
-                res1.agregarServicio(desayuno);
+        System.out.println("\nSesión finalizada. Los datos quedaron guardados en datos/*.dat");
+    }
 
+    private static void ejecutarPruebaConcurrencia(GestorHabitaciones gestorHab, GestorReservas gestorRes)
+            throws InterruptedException {
                 Factura factura1 = new Factura(res1, "TARJETA");
                 procesador.encolarFactura(factura1); // no bloquea: la procesa el otro hilo
             } else {
@@ -76,30 +93,31 @@ public class Main {
         // puede verificar y ocupar a la vez; el otro recibe HabitacionNoDisponibleException.
         System.out.println(">> Prueba de concurrencia: 2 hilos compiten por la habitación 102...\n");
         Habitacion hab102 = gestorHab.obtenerHabitacion(102);
-
-        if (hab102 != null && hab102.estaDisponible()) {
-            Runnable intentoReserva = () -> {
-                try {
-                    Date hoy = new Date();
-                    Date pasadoManana = new Date(hoy.getTime() + (48 * 60 * 60 * 1000));
-                    Reserva r = gestorRes.crearReserva(cliente2, hab102, hoy, pasadoManana);
-                    System.out.println("  ✓ [" + Thread.currentThread().getName() + "] Reserva EXITOSA: " + r.getId());
-                } catch (HabitacionNoDisponibleException e) {
-                    System.out.println("  ✗ [" + Thread.currentThread().getName() + "] Rechazado: " + e.getMessage());
-                }
-            };
-
-            Thread hiloA = new Thread(intentoReserva, "Hilo-ClienteA");
-            Thread hiloB = new Thread(intentoReserva, "Hilo-ClienteB");
-            hiloA.start();
-            hiloB.start();
-            hiloA.join();
-            hiloB.join();
-            System.out.println("\n✓ Solo uno de los dos hilos debió reservar la habitación 102 (ver resultado arriba).\n");
-        } else {
-            System.out.println("  Habitación 102 no disponible para esta prueba en esta ejecución.\n");
+        if (hab102 == null || !hab102.estaDisponible()) {
+            return;
         }
 
+        Cliente clientePrueba = new Cliente("Cliente de prueba", "0000-0000", "prueba@example.com");
+
+        Runnable intentoReserva = () -> {
+            try {
+                Date hoy = new Date();
+                Date pasadoManana = new Date(hoy.getTime() + (48 * 60 * 60 * 1000));
+                Reserva r = gestorRes.crearReserva(clientePrueba, hab102, hoy, pasadoManana);
+                System.out.println("  [" + Thread.currentThread().getName() + "] Reserva EXITOSA: " + r.getId());
+            } catch (HabitacionNoDisponibleException e) {
+                System.out.println("  [" + Thread.currentThread().getName() + "] Rechazado: " + e.getMessage());
+            }
+        };
+
+        System.out.println(">> Prueba de concurrencia: 2 hilos compiten por la habitación 102...");
+        Thread hiloA = new Thread(intentoReserva, "Hilo-ClienteA");
+        Thread hiloB = new Thread(intentoReserva, "Hilo-ClienteB");
+        hiloA.start();
+        hiloB.start();
+        hiloA.join();
+        hiloB.join();
+        System.out.println("Solo uno de los dos hilos debió reservar la habitación 102.\n");
         int ocupadas = gestorHab.obtenerHabitacionesOcupadas();
         int total = gestorHab.obtenerTotalHabitaciones();
         double factorDemanda = CalculadorTarifas.calcularFactorDemanda(ocupadas, total);
