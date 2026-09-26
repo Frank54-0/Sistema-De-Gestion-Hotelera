@@ -11,27 +11,30 @@ import java.util.Date;
 import java.util.List;
 
 /**
- * Clase principal para pruebas funcionales del Sistema de Gestión Hotelera — Avance 2.
- * Demuestra el funcionamiento de:
- * - Persistencia de datos en archivos .dat (carga automática al iniciar)
- * - Programación concurrente: ProcesadorFacturas como hilo en segundo plano
- * - Sincronización: dos hilos compitiendo por la misma habitación (crearReserva)
- * - Herencia, polimorfismo, encapsulamiento y colecciones (heredado de Avance 1)
+ * Demostración por consola del Avance 2: persistencia en .dat, procesamiento de
+ * facturas en segundo plano y sincronización de reservas concurrentes.
+ *
+ * <p>Está pensada para ejecutarse dos veces seguidas: la segunda corrida carga
+ * los datos de la primera y debe rechazar las habitaciones ya reservadas.</p>
  */
 public class Main {
 
+    /**
+     * @param args no se usan
+     * @throws InterruptedException si se interrumpe la espera de los hilos
+     */
     public static void main(String[] args) throws InterruptedException {
         System.out.println("=== Sistema de Gestión Hotelera - Avance 2 ===\n");
 
-        // 1. Gestores: cargan automáticamente datos previos desde datos/*.dat (si existen)
+        // GestorReservas debe recibir el MISMO GestorHabitaciones: con otra instancia
+        // habría dos copias de cada habitación y sus estados se desincronizarían.
         GestorHabitaciones gestorHab = new GestorHabitaciones();
-        GestorReservas gestorRes = new GestorReservas();
+        GestorReservas gestorRes = new GestorReservas(gestorHab);
 
         System.out.println(">> Datos cargados desde persistencia (.dat):");
         System.out.println("   Habitaciones ya registradas: " + gestorHab.obtenerTotalHabitaciones());
         System.out.println("   Reservas ya registradas: " + gestorRes.obtenerTotalReservas() + "\n");
 
-        // 2. Si es la primera ejecución (no hay habitaciones aún), se crean unas iniciales
         if (gestorHab.obtenerTotalHabitaciones() == 0) {
             System.out.println(">> Primera ejecución: creando habitaciones iniciales...");
             gestorHab.agregarHabitacion(new HabitacionSencilla(101, 100.0));
@@ -40,12 +43,10 @@ public class Main {
             System.out.println("✓ " + gestorHab.obtenerTotalHabitaciones() + " habitaciones creadas y persistidas en datos/habitaciones.dat\n");
         }
 
-        // 3. Iniciar el hilo ProcesadorFacturas (concurrencia en segundo plano)
         ProcesadorFacturas procesador = new ProcesadorFacturas();
         procesador.start();
         System.out.println(">> Hilo ProcesadorFacturas iniciado en segundo plano.\n");
 
-        // 4. Crear clientes y una reserva "normal"
         Cliente cliente1 = new Cliente("Juan Pérez", "7777-1234", "juan@example.com");
         Cliente cliente2 = new Cliente("María García", "7777-5678", "maria@example.com");
 
@@ -63,7 +64,7 @@ public class Main {
                 res1.agregarServicio(desayuno);
 
                 Factura factura1 = new Factura(res1, "TARJETA");
-                procesador.encolarFactura(factura1); // se procesa en paralelo, no bloquea aquí
+                procesador.encolarFactura(factura1); // no bloquea: la procesa el otro hilo
             } else {
                 System.out.println(">> Habitación 101 no disponible en esta ejecución (ya estaba reservada de una corrida anterior).\n");
             }
@@ -71,10 +72,8 @@ public class Main {
             System.out.println("✗ Error: " + e.getMessage() + "\n");
         }
 
-        // 5. DEMOSTRACIÓN DE CONCURRENCIA REAL:
-        //    Dos hilos intentan reservar SIMULTÁNEAMENTE la misma habitación (102).
-        //    Gracias a que crearReserva() es synchronized, solo uno de los dos
-        //    debe tener éxito; el otro debe recibir HabitacionNoDisponibleException.
+        // Dos hilos compiten por la 102. Como crearReserva() es synchronized, solo uno
+        // puede verificar y ocupar a la vez; el otro recibe HabitacionNoDisponibleException.
         System.out.println(">> Prueba de concurrencia: 2 hilos compiten por la habitación 102...\n");
         Habitacion hab102 = gestorHab.obtenerHabitacion(102);
 
@@ -101,17 +100,16 @@ public class Main {
             System.out.println("  Habitación 102 no disponible para esta prueba en esta ejecución.\n");
         }
 
-        // 6. Calcular factor de demanda con las habitaciones actuales
         int ocupadas = gestorHab.obtenerHabitacionesOcupadas();
         int total = gestorHab.obtenerTotalHabitaciones();
         double factorDemanda = CalculadorTarifas.calcularFactorDemanda(ocupadas, total);
         System.out.println(">> Factor de demanda actual: " + factorDemanda + " (" + ocupadas + "/" + total + " ocupadas)\n");
 
-        // 7. Esperar a que el hilo ProcesadorFacturas termine de procesar la cola y detenerlo
+        // join() espera a que el hilo vacíe la cola; sin él, el resumen podría
+        // imprimirse con facturas aún sin procesar.
         procesador.detener();
         procesador.join();
 
-        // 8. Resumen final (releyendo desde los gestores, ya persistidos en .dat)
         List<Habitacion> disponibles = gestorHab.obtenerHabitacionesDisponibles();
         System.out.println("=== Resumen Final ===");
         System.out.println("Total de habitaciones: " + gestorHab.obtenerTotalHabitaciones());
