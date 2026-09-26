@@ -13,25 +13,30 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- * Clase base genérica de la capa DAO.
- * Concentra toda la mecánica de serialización sobre archivos .dat,
- * para que cada DAO concreto (ClienteDAO, HabitacionDAO, ReservaDAO,
- * FacturaDAO)
- * solo tenga que indicar su nombre de archivo y exponer sus métodos de negocio.
- * 
- * @param <T> tipo de entidad que persiste este DAO. Debe ser Serializable.
+ * Base genérica de la capa DAO. Concentra la serialización sobre archivos .dat
+ * para que cada DAO concreto solo indique su nombre de archivo.
+ *
+ * <p><b>Concurrencia.</b> Se sincroniza sobre un candado estático y no sobre la
+ * instancia: con candado por instancia, dos {@code new HabitacionDAO()} podrían
+ * escribir el mismo archivo a la vez y corromperlo (Error #3 encontrado por QA).
+ * Un solo candado para todos los archivos es menos eficiente que uno por archivo, pero
+ * más simple y suficiente para este sistema.</p>
+ *
+ * @param <T> tipo de entidad persistida; debe ser Serializable
  */
 public abstract class ArchivoDAO<T extends java.io.Serializable> {
 
-    /** Carpeta donde viven todos los archivos .dat del sistema. */
     protected static final String CARPETA_DATOS = "datos";
+
+    private static final Object CANDADO_ARCHIVOS = new Object();
 
     private final File archivo;
 
     /**
-     * Construye el DAO y garantiza que la carpeta de datos exista.
-     * 
-     * @param nombreArchivo nombre del archivo .dat
+     * Crea la carpeta de datos si no existe.
+     *
+     * @param nombreArchivo nombre del archivo .dat dentro de {@code datos/}
+     * @throws PersistenciaException si no se puede crear la carpeta
      */
     protected ArchivoDAO(String nombreArchivo) {
         File carpeta = new File(CARPETA_DATOS);
@@ -43,44 +48,46 @@ public abstract class ArchivoDAO<T extends java.io.Serializable> {
     }
 
     /**
-     * Guarda la lista completa en el archivo, sobrescribiendo lo anterior.
-     * Se copia la lista recibida antes de serializar para que un cambio
-     * concurrente sobre ella no corrompa la escritura.
+     * Sobrescribe el archivo con la lista completa.
      *
-     * @param entidades lista de entidades a persistir; null se trata como lista
-     *                  vacía
+     * @param entidades entidades a persistir; null se trata como lista vacía
      * @throws PersistenciaException si ocurre un error de escritura
      */
-    protected synchronized void guardarTodos(List<T> entidades) {
-        List<T> copia = (entidades == null) ? new ArrayList<T>() : new ArrayList<T>(entidades);
-        try (ObjectOutputStream salida = new ObjectOutputStream(new FileOutputStream(archivo))) {
-            salida.writeObject(copia);
-        } catch (IOException e) {
-            throw new PersistenciaException(
-                    "Error al guardar en " + archivo.getPath(), e);
+    protected void guardarTodos(List<T> entidades) {
+        synchronized (CANDADO_ARCHIVOS) {
+            // Se serializa una copia: si otro hilo modifica la lista original durante
+            // la escritura, writeObject lanzaría ConcurrentModificationException.
+            List<T> copia = (entidades == null) ? new ArrayList<T>() : new ArrayList<T>(entidades);
+            try (ObjectOutputStream salida = new ObjectOutputStream(new FileOutputStream(archivo))) {
+                salida.writeObject(copia);
+            } catch (IOException e) {
+                throw new PersistenciaException(
+                        "Error al guardar en " + archivo.getPath(), e);
+            }
         }
     }
 
     /**
-     * Carga la lista completa desde el archivo.
-     * Si el archivo aún no existe devuelve
-     * una lista vacía, que es una situación normal y no un error.
+     * Carga la lista completa. Que el archivo no exista es normal en la primera
+     * ejecución y devuelve una lista vacía.
      *
-     * @return lista de entidades persistidas; nunca null
+     * @return entidades persistidas; nunca null
      * @throws PersistenciaException si el archivo existe pero no se puede leer
      */
     @SuppressWarnings("unchecked")
-    protected synchronized List<T> cargarTodos() {
-        if (!archivo.exists()) {
-            return new ArrayList<T>();
-        }
-        try (ObjectInputStream entrada = new ObjectInputStream(new FileInputStream(archivo))) {
-            return (List<T>) entrada.readObject();
-        } catch (IOException | ClassNotFoundException e) {
-            throw new PersistenciaException(
-                    "Error al leer " + archivo.getPath()
-                            + ". El archivo puede estar corrupto o pertenecer a otra versión del modelo.",
-                    e);
+    protected List<T> cargarTodos() {
+        synchronized (CANDADO_ARCHIVOS) {
+            if (!archivo.exists()) {
+                return new ArrayList<T>();
+            }
+            try (ObjectInputStream entrada = new ObjectInputStream(new FileInputStream(archivo))) {
+                return (List<T>) entrada.readObject();
+            } catch (IOException | ClassNotFoundException e) {
+                throw new PersistenciaException(
+                        "Error al leer " + archivo.getPath()
+                                + ". El archivo puede estar corrupto o pertenecer a otra versión del modelo.",
+                        e);
+            }
         }
     }
 
@@ -89,40 +96,34 @@ public abstract class ArchivoDAO<T extends java.io.Serializable> {
      *
      * @param entidad entidad a agregar; se ignora si es null
      */
-    protected synchronized void agregar(T entidad) {
-        if (entidad == null) {
-            return;
+    protected void agregar(T entidad) {
+        // Leer, agregar y guardar bajo el mismo candado; si no, otro hilo podría
+        // escribir entre la lectura y la escritura y su cambio se perdería.
+        synchronized (CANDADO_ARCHIVOS) {
+            if (entidad == null) {
+                return;
+            }
+            List<T> entidades = cargarTodos();
+            entidades.add(entidad);
+            guardarTodos(entidades);
         }
-        List<T> entidades = cargarTodos();
-        entidades.add(entidad);
-        guardarTodos(entidades);
     }
 
-    /**
-     * Devuelve una vista de solo lectura de la lista persistida.
-     * Es útil para consultas ya que evita que el llamador modifique los datos por
-     * accidente.
-     *
-     * @return lista inmutable de entidades
-     */
-    protected synchronized List<T> consultarTodos() {
-        return Collections.unmodifiableList(cargarTodos());
+    /** @return lista de solo lectura con las entidades persistidas */
+    protected List<T> consultarTodos() {
+        synchronized (CANDADO_ARCHIVOS) {
+            return Collections.unmodifiableList(cargarTodos());
+        }
     }
 
-    /**
-     * Indica si el archivo de este DAO ya existe en disco.
-     *
-     * @return true si hay datos persistidos previamente
-     */
-    public synchronized boolean existeArchivo() {
-        return archivo.exists();
+    /** @return true si ya hay datos persistidos para este DAO */
+    public boolean existeArchivo() {
+        synchronized (CANDADO_ARCHIVOS) {
+            return archivo.exists();
+        }
     }
 
-    /**
-     * Ruta del archivo administrado por este DAO. Útil para mensajes de log.
-     *
-     * @return ruta relativa del archivo .dat
-     */
+    /** @return ruta relativa del archivo .dat */
     public String getRutaArchivo() {
         return archivo.getPath();
     }
