@@ -1,0 +1,60 @@
+@import './Dashboard.css';
+
+.date-nav {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  padding: 6px 12px;
+  font-size: 0.85rem;
+  background: var(--color-card);
+  height: fit-content;
+}
+.date-nav button { border: none; background: none; font-size: 1rem; }
+
+.legend {
+  display: flex;
+  gap: 24px;
+  margin-bottom: 24px;
+  font-size: 0.85rem;
+  color: var(--color-text-muted);
+}
+.legend span { display: flex; align-items: center; gap: 6px; }
+
+.dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
+.dot-info { background: #2f5f8a; }
+.dot-danger { background: var(--color-danger); }
+.dot-neutral { background: #9ca3af; }
+.dot-dark { background: #374151; }
+
+.section-title { font-size: 1.05rem; margin: 24px 0 12px; }
+
+.rooms-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+}
+
+.room-card {
+  background: var(--color-card);
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  padding: 14px;
+}
+
+.room-card-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px;
+}
+
+.room-num { font-size: 1.2rem; font-weight: 700; }
+.badge-neutral { background: var(--color-bg); color: var(--color-text-muted); }
+
+.room-note {
+  font-size: 0.8rem;
+  color: var(--color-primary);
+  margin-top: 8px;
+}
