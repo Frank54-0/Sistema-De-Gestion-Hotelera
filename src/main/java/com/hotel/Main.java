@@ -3,6 +3,7 @@ package com.hotel;
 import com.hotel.controlador.ReservaController;
 import com.hotel.excepciones.HabitacionNoDisponibleException;
 import com.hotel.modelo.*;
+import com.hotel.servicio.CalculadorTarifas;
 import com.hotel.servicio.GestorHabitaciones;
 import com.hotel.servicio.GestorReservas;
 import com.hotel.servicio.ProcesadorFacturas;
@@ -10,13 +11,13 @@ import com.hotel.vista.VistaReservas;
 
 import java.util.Date;
 import java.util.Scanner;
+import java.util.List;
 
 // Punto de arranque de la aplicación (Avance 2).
 // Main SOLO crea las capas y las conecta entre sí:
 // Servicio (Gestores) -> Control (ReservaController) -> Presentación (VistaReservas).
 // No contiene lógica de negocio ni interacción con el usuario: eso vive en
 // las clases de cada capa correspondiente.
-import java.util.List;
 
 /**
  * Demostración por consola del Avance 2: persistencia en .dat, procesamiento de
@@ -72,23 +73,34 @@ public class Main {
         vista.iniciar();
 
         // 7. Al salir del menú, se detiene el hilo en segundo plano
+        // (Se unificó el cierre del hilo con el bloque del resumen final que tenías)
+
+        // --- RESUMEN FINAL RESTAURADO EXACTAMENTE COMO LO TENÍAS ---
+        int ocupadas = gestorHab.obtenerHabitacionesOcupadas();
+        int total = gestorHab.obtenerTotalHabitaciones();
+        double factorDemanda = CalculadorTarifas.calcularFactorDemanda(ocupadas, total);
+        System.out.println(">> Factor de demanda actual: " + factorDemanda + " (" + ocupadas + "/" + total + " ocupadas)\n");
+
+        // join() espera a que el hilo vacíe la cola; sin él, el resumen podría
+        // imprimirse con facturas aún sin procesar.
         procesador.detener();
         procesador.join();
+
+        List<Habitacion> disponibles = gestorHab.obtenerHabitacionesDisponibles();
+        System.out.println("=== Resumen Final ===");
+        System.out.println("Total de habitaciones: " + gestorHab.obtenerTotalHabitaciones());
+        System.out.println("Habitaciones disponibles: " + disponibles.size());
+        System.out.println("Habitaciones ocupadas: " + gestorHab.obtenerHabitacionesOcupadas());
+        System.out.println("Total de reservas: " + gestorRes.obtenerTotalReservas());
+        System.out.println("Reservas activas: " + gestorRes.obtenerReservasActivas().size());
+        System.out.println("\n✓ Avance 2 (persistencia + concurrencia) ejecutado exitosamente!");
+        System.out.println("  Vuelve a ejecutar el programa: los datos de datos/*.dat se recargarán automáticamente.");
 
         System.out.println("\nSesión finalizada. Los datos quedaron guardados en datos/*.dat");
     }
 
     private static void ejecutarPruebaConcurrencia(GestorHabitaciones gestorHab, GestorReservas gestorRes)
             throws InterruptedException {
-                Factura factura1 = new Factura(res1, "TARJETA");
-                procesador.encolarFactura(factura1); // no bloquea: la procesa el otro hilo
-            } else {
-                System.out.println(">> Habitación 101 no disponible en esta ejecución (ya estaba reservada de una corrida anterior).\n");
-            }
-        } catch (HabitacionNoDisponibleException e) {
-            System.out.println("✗ Error: " + e.getMessage() + "\n");
-        }
-
         // Dos hilos compiten por la 102. Como crearReserva() es synchronized, solo uno
         // puede verificar y ocupar a la vez; el otro recibe HabitacionNoDisponibleException.
         System.out.println(">> Prueba de concurrencia: 2 hilos compiten por la habitación 102...\n");
@@ -118,24 +130,5 @@ public class Main {
         hiloA.join();
         hiloB.join();
         System.out.println("Solo uno de los dos hilos debió reservar la habitación 102.\n");
-        int ocupadas = gestorHab.obtenerHabitacionesOcupadas();
-        int total = gestorHab.obtenerTotalHabitaciones();
-        double factorDemanda = CalculadorTarifas.calcularFactorDemanda(ocupadas, total);
-        System.out.println(">> Factor de demanda actual: " + factorDemanda + " (" + ocupadas + "/" + total + " ocupadas)\n");
-
-        // join() espera a que el hilo vacíe la cola; sin él, el resumen podría
-        // imprimirse con facturas aún sin procesar.
-        procesador.detener();
-        procesador.join();
-
-        List<Habitacion> disponibles = gestorHab.obtenerHabitacionesDisponibles();
-        System.out.println("=== Resumen Final ===");
-        System.out.println("Total de habitaciones: " + gestorHab.obtenerTotalHabitaciones());
-        System.out.println("Habitaciones disponibles: " + disponibles.size());
-        System.out.println("Habitaciones ocupadas: " + gestorHab.obtenerHabitacionesOcupadas());
-        System.out.println("Total de reservas: " + gestorRes.obtenerTotalReservas());
-        System.out.println("Reservas activas: " + gestorRes.obtenerReservasActivas().size());
-        System.out.println("\n✓ Avance 2 (persistencia + concurrencia) ejecutado exitosamente!");
-        System.out.println("  Vuelve a ejecutar el programa: los datos de datos/*.dat se recargarán automáticamente.");
     }
 }
