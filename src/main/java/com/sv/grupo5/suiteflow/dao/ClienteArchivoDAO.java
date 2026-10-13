@@ -1,15 +1,17 @@
 package com.sv.grupo5.suiteflow.dao;
 
+import com.sv.grupo5.suiteflow.exception.PersistenciaException;
 import com.sv.grupo5.suiteflow.model.Cliente;
 
 import java.util.List;
+import java.util.Optional;
 
 /**
- * Acceso a datos de la entidad Cliente. Persiste en datos/clientes.dat.
- * Toda la mecánica de serialización vive en ArchivoDAO; aquí solo quedan
- * las operaciones propias del negocio de clientes.
+ * Implementación de {@link ClienteDAO} basada en archivos, persistida en
+ * {@code datos/clientes.dat}. Toda la mecánica de serialización vive en
+ * ArchivoDAO; aquí solo quedan las operaciones propias de los clientes.
  */
-public class ClienteArchivoDAO extends ArchivoDAO<Cliente> {
+public class ClienteArchivoDAO extends ArchivoDAO<Cliente> implements ClienteDAO {
 
     private static final String ARCHIVO = "clientes.dat";
 
@@ -36,30 +38,38 @@ public class ClienteArchivoDAO extends ArchivoDAO<Cliente> {
         return cargarTodos();
     }
 
-    /**
-     * Agrega un cliente a los datos persistidos.
-     *
-     * @param cliente cliente a agregar
-     */
-    public void guardarCliente(Cliente cliente) {
+    @Override
+    public void guardar(Cliente cliente) {
         agregar(cliente);
     }
 
-    /**
-     * Busca un cliente por su identificador único.
-     *
-     * @param id identificador del cliente
-     * @return el cliente si existe, null en caso contrario
-     */
-    public Cliente buscarPorId(String id) {
+    @Override
+    public void actualizar(Cliente cliente) {
+        boolean existe = reemplazarPrimero(c -> c.getId().equals(cliente.getId()), cliente);
+        if (!existe) {
+            throw new PersistenciaException(
+                    "No existe el cliente a actualizar: " + cliente.getId());
+        }
+    }
+
+    @Override
+    public Optional<Cliente> buscarPorId(String id) {
         if (id == null) {
-            return null;
+            return Optional.empty();
         }
-        for (Cliente cliente : cargarTodos()) {
-            if (id.equals(cliente.getId())) {
-                return cliente;
-            }
+        return buscarPrimero(c -> id.equals(c.getId()));
+    }
+
+    @Override
+    public List<Cliente> listarTodos() {
+        return cargarTodos();
+    }
+
+    @Override
+    public boolean eliminar(String id) {
+        if (id == null) {
+            return false;
         }
-        return null;
+        return eliminarSi(c -> id.equals(c.getId()));
     }
 }

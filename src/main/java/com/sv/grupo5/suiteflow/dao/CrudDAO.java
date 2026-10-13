@@ -26,8 +26,12 @@ public interface CrudDAO <T, ID>{
 
     void guardar(T entidad);
 
-    //Actualiza una entidad que ya existe
-    //entidad con los datos nuevos
+    /**
+     * Actualiza una entidad que ya existe.
+     *
+     * @param entidad entidad con los datos nuevos
+     * @throws com.sv.grupo5.suiteflow.exception.PersistenciaException si la entidad no existe
+     */
 
     void actualizar(T entidad);
 
