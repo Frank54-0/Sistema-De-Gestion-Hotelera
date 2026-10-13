@@ -24,7 +24,7 @@ public class ReservaController {
     public ReservaController(GestorReservas gestorReservas, GestorHabitaciones gestorHabitaciones) {
         // Si por error no nos dan las herramientas, avisamos que algo salió mal.
         if (gestorReservas == null || gestorHabitaciones == null) {
-            throw new IllegalArgumentException("Los gestores no pueden ser nuell");
+            throw new IllegalArgumentException("Los gestores no pueden ser null");
         }
         this.gestorReservas = gestorReservas;
         this.gestorHabitaciones = gestorHabitaciones;
