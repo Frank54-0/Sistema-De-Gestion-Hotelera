@@ -1,16 +1,19 @@
 package com.sv.grupo5.suiteflow.dao;
 
+import com.sv.grupo5.suiteflow.exception.PersistenciaException;
 import com.sv.grupo5.suiteflow.model.Reserva;
 
 import java.util.List;
+import java.util.Optional;
 
 /**
- * Acceso a datos de Reserva, persistido en {@code datos/reservas.dat}.
+ * Implementación de {@link ReservaDAO} basada en archivos, persistida en
+ * {@code datos/reservas.dat}.
  *
  * <p>Las reservas se devuelven con la habitación en null (el atributo es
  * transient); el reenlace con el inventario lo hace GestorReservas.</p>
  */
-public class ReservaArchivoDAO extends ArchivoDAO<Reserva> {
+public class ReservaArchivoDAO extends ArchivoDAO<Reserva> implements ReservaDAO {
 
     private static final String ARCHIVO = "reservas.dat";
 
@@ -33,32 +36,38 @@ public class ReservaArchivoDAO extends ArchivoDAO<Reserva> {
         return cargarTodos();
     }
 
-    /**
-     * Agrega una reserva a los datos persistidos.
-     *
-     * @param reserva reserva a agregar
-     */
-    public void guardarReserva(Reserva reserva) {
+    @Override
+    public void guardar(Reserva reserva) {
         agregar(reserva);
     }
 
-    /**
-     * Busca directamente en disco. La reserva devuelve null en getHabitacion()
-     * porque no pasa por GestorReservas; para uso normal preferir
-     * GestorReservas.obtenerReserva().
-     *
-     * @param id identificador de la reserva
-     * @return la reserva, o null si no existe
-     */
-    public Reserva buscarPorId(String id) {
+    @Override
+    public void actualizar(Reserva reserva) {
+        boolean existe = reemplazarPrimero(r -> r.getId().equals(reserva.getId()), reserva);
+        if (!existe) {
+            throw new PersistenciaException(
+                    "No existe la reserva a actualizar: " + reserva.getId());
+        }
+    }
+
+    @Override
+    public Optional<Reserva> buscarPorId(String id) {
         if (id == null) {
-            return null;
+            return Optional.empty();
         }
-        for (Reserva reserva : cargarTodos()) {
-            if (id.equals(reserva.getId())) {
-                return reserva;
-            }
+        return buscarPrimero(r -> id.equals(r.getId()));
+    }
+
+    @Override
+    public List<Reserva> listarTodos() {
+        return cargarTodos();
+    }
+
+    @Override
+    public boolean eliminar(String id) {
+        if (id == null) {
+            return false;
         }
-        return null;
+        return eliminarSi(r -> id.equals(r.getId()));
     }
 }

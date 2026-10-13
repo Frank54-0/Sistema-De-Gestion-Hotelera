@@ -39,7 +39,8 @@ public interface CrudDAO <T, ID>{
 
     //Devuelve todas las entidades almacenadas.
     //Retorna lista de entidades; vacia si no hay ninguna nunca null
-    List<T> buscarTodos();
+
+    List<T> listarTodos();
 
     //Elimina una entidad por su identificador ID
     // id identificador a eliminar
