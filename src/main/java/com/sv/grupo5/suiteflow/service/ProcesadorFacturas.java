@@ -1,6 +1,6 @@
 package com.sv.grupo5.suiteflow.service;
 
-import com.sv.grupo5.suiteflow.dao.FacturaDAO;
+import com.sv.grupo5.suiteflow.dao.FacturaArchivoDAO;
 import com.sv.grupo5.suiteflow.model.Factura;
 
 import java.util.LinkedList;
@@ -28,14 +28,14 @@ public class ProcesadorFacturas extends Thread {
     private static final long DURACION_PROCESO_MS = 1500L;
 
     private final Queue<Factura> colaFacturas = new LinkedList<Factura>();
-    private final FacturaDAO facturaDAO;
+    private final FacturaArchivoDAO facturaDAO;
 
     private boolean ejecutando = true;
     private int totalProcesadas = 0;
 
     /** Construye el procesador con el DAO de facturas por defecto. */
     public ProcesadorFacturas() {
-        this(new FacturaDAO());
+        this(new FacturaArchivoDAO());
     }
 
     /**
@@ -44,7 +44,7 @@ public class ProcesadorFacturas extends Thread {
      *
      * @param facturaDAO DAO encargado de persistir las facturas procesadas
      */
-    public ProcesadorFacturas(FacturaDAO facturaDAO) {
+    public ProcesadorFacturas(FacturaArchivoDAO facturaDAO) {
         super("Hilo-ProcesadorFacturas");
         if (facturaDAO == null) {
             throw new IllegalArgumentException("El DAO de facturas no puede ser null");
