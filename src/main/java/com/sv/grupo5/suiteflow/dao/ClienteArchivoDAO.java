@@ -9,12 +9,12 @@ import java.util.List;
  * Toda la mecánica de serialización vive en ArchivoDAO; aquí solo quedan
  * las operaciones propias del negocio de clientes.
  */
-public class ClienteDAO extends ArchivoDAO<Cliente> {
+public class ClienteArchivoDAO extends ArchivoDAO<Cliente> {
 
     private static final String ARCHIVO = "clientes.dat";
 
     /** Construye el DAO apuntando a datos/clientes.dat. */
-    public ClienteDAO() {
+    public ClienteArchivoDAO() {
         super(ARCHIVO);
     }
 

@@ -9,12 +9,12 @@ import java.util.List;
  * Gracias al polimorfismo, las subclases (HabitacionSencilla, HabitacionDoble,
  * Suite) se serializan y recuperan con su tipo real sin lógica adicional.
  */
-public class HabitacionDAO extends ArchivoDAO<Habitacion> {
+public class HabitacionArchivoDAO extends ArchivoDAO<Habitacion> {
 
     private static final String ARCHIVO = "habitaciones.dat";
 
     /** Construye el DAO apuntando a datos/habitaciones.dat. */
-    public HabitacionDAO() {
+    public HabitacionArchivoDAO() {
         super(ARCHIVO);
     }
 

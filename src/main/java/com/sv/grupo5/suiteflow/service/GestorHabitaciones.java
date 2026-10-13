@@ -1,6 +1,6 @@
 package com.sv.grupo5.suiteflow.service;
 
-import com.sv.grupo5.suiteflow.dao.HabitacionDAO;
+import com.sv.grupo5.suiteflow.dao.HabitacionArchivoDAO;
 import com.sv.grupo5.suiteflow.model.Habitacion;
 
 import java.util.ArrayList;
@@ -23,14 +23,14 @@ import java.util.List;
 public class GestorHabitaciones {
 
     private final List<Habitacion> habitaciones;
-    private final HabitacionDAO habitacionDAO;
+    private final HabitacionArchivoDAO habitacionDAO;
 
     /**
      * Construye el gestor usando el DAO por defecto y carga el inventario
      * previamente persistido en datos/habitaciones.dat.
      */
     public GestorHabitaciones() {
-        this(new HabitacionDAO());
+        this(new HabitacionArchivoDAO());
     }
 
     /**
@@ -40,7 +40,7 @@ public class GestorHabitaciones {
      *
      * @param habitacionDAO DAO encargado de la persistencia
      */
-    public GestorHabitaciones(HabitacionDAO habitacionDAO) {
+    public GestorHabitaciones(HabitacionArchivoDAO habitacionDAO) {
         if (habitacionDAO == null) {
             throw new IllegalArgumentException("El DAO de habitaciones no puede ser null");
         }

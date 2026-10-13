@@ -10,12 +10,12 @@ import java.util.List;
  * Es usado tanto por el hilo principal como por ProcesadorFacturas, por lo
  * que la sincronización heredada de ArchivoDAO es indispensable aquí.
  */
-public class FacturaDAO extends ArchivoDAO<Factura> {
+public class FacturaArchivoDAO extends ArchivoDAO<Factura> {
 
     private static final String ARCHIVO = "facturas.dat";
 
     /** Construye el DAO apuntando a datos/facturas.dat. */
-    public FacturaDAO() {
+    public FacturaArchivoDAO() {
         super(ARCHIVO);
     }
 

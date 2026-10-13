@@ -1,6 +1,6 @@
 package com.sv.grupo5.suiteflow.service;
 
-import com.sv.grupo5.suiteflow.dao.ReservaDAO;
+import com.sv.grupo5.suiteflow.dao.ReservaArchivoDAO;
 import com.sv.grupo5.suiteflow.exception.HabitacionNoDisponibleException;
 import com.sv.grupo5.suiteflow.exception.PersistenciaException;
 import com.sv.grupo5.suiteflow.model.Cliente;
@@ -32,7 +32,7 @@ import java.util.List;
 public class GestorReservas {
 
     private final List<Reserva> reservas;
-    private final ReservaDAO reservaDAO;
+    private final ReservaArchivoDAO reservaDAO;
     private final GestorHabitaciones gestorHabitaciones;
 
     /**
@@ -43,7 +43,7 @@ public class GestorReservas {
      *                           existir dos copias de cada habitación
      */
     public GestorReservas(GestorHabitaciones gestorHabitaciones) {
-        this(new ReservaDAO(), gestorHabitaciones);
+        this(new ReservaArchivoDAO(), gestorHabitaciones);
     }
 
     /**
@@ -54,7 +54,7 @@ public class GestorReservas {
      * @throws PersistenciaException si una reserva guardada apunta a una
      *                               habitación inexistente en el inventario
      */
-    public GestorReservas(ReservaDAO reservaDAO, GestorHabitaciones gestorHabitaciones) {
+    public GestorReservas(ReservaArchivoDAO reservaDAO, GestorHabitaciones gestorHabitaciones) {
         if (reservaDAO == null) {
             throw new IllegalArgumentException("El DAO de reservas no puede ser null");
         }

@@ -10,12 +10,12 @@ import java.util.List;
  * <p>Las reservas se devuelven con la habitación en null (el atributo es
  * transient); el reenlace con el inventario lo hace GestorReservas.</p>
  */
-public class ReservaDAO extends ArchivoDAO<Reserva> {
+public class ReservaArchivoDAO extends ArchivoDAO<Reserva> {
 
     private static final String ARCHIVO = "reservas.dat";
 
     /** Crea el DAO apuntando a {@code datos/reservas.dat}. */
-    public ReservaDAO() {
+    public ReservaArchivoDAO() {
         super(ARCHIVO);
     }
 
