@@ -1,6 +1,7 @@
 package com.sv.grupo5.suiteflow.service;
 
 import com.sv.grupo5.suiteflow.dao.FacturaArchivoDAO;
+import com.sv.grupo5.suiteflow.dao.FacturaDAO;
 import com.sv.grupo5.suiteflow.model.Factura;
 
 import java.util.LinkedList;
@@ -9,6 +10,10 @@ import java.util.Queue;
 /**
  * Hilo que procesa facturas en segundo plano, de forma asíncrona respecto al
  * flujo principal del sistema.
+ *
+ * <p><b>Capa de Servicio.</b> Nunca toca archivos ni SQL directamente: delega la
+ * persistencia en la interfaz {@link FacturaDAO}, de modo que funciona igual con
+ * archivos, con MySQL o con un DAO de prueba.</p>
  *
  * <b>Justificación técnica de la concurrencia.</b> Generar una factura en un
  * hotel real no es instantáneo: hay que armar el documento, calcular impuestos
@@ -28,23 +33,24 @@ public class ProcesadorFacturas extends Thread {
     private static final long DURACION_PROCESO_MS = 1500L;
 
     private final Queue<Factura> colaFacturas = new LinkedList<Factura>();
-    private final FacturaArchivoDAO facturaDAO;
+    private final FacturaDAO facturaDAO;
 
     private boolean ejecutando = true;
     private int totalProcesadas = 0;
 
-    /** Construye el procesador con el DAO de facturas por defecto. */
+    /** Construye el procesador con el DAO de archivos por defecto. */
     public ProcesadorFacturas() {
         this(new FacturaArchivoDAO());
     }
 
     /**
      * Construye el procesador con un DAO indicado por el llamador.
-     * Permite inyectar un DAO de prueba en los tests unitarios.
+     * Permite inyectar un DAO de prueba en los tests unitarios o, más
+     * adelante, uno JDBC.
      *
      * @param facturaDAO DAO encargado de persistir las facturas procesadas
      */
-    public ProcesadorFacturas(FacturaArchivoDAO facturaDAO) {
+    public ProcesadorFacturas(FacturaDAO facturaDAO) {
         super("Hilo-ProcesadorFacturas");
         if (facturaDAO == null) {
             throw new IllegalArgumentException("El DAO de facturas no puede ser null");
@@ -112,7 +118,7 @@ public class ProcesadorFacturas extends Thread {
             System.out.println("[ProcesadorFacturas] Procesando factura " + factura.getId() + "...");
             Thread.sleep(DURACION_PROCESO_MS);
             factura.generarFactura();
-            facturaDAO.guardarFactura(factura);
+            facturaDAO.guardar(factura);
             registrarProcesada();
             System.out.println("[ProcesadorFacturas] Factura " + factura.getId()
                     + " procesada. Total: $" + String.format("%.2f", factura.getTotal()));
