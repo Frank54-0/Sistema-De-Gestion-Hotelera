@@ -1,7 +1,6 @@
 package com.sv.grupo5.suiteflow.service;
 
 import com.sv.grupo5.suiteflow.dao.DAOEnMemoria;
-import com.sv.grupo5.suiteflow.dao.ReservaArchivoDAO;
 import com.sv.grupo5.suiteflow.exception.HabitacionNoDisponibleException;
 import com.sv.grupo5.suiteflow.exception.PersistenciaException;
 import com.sv.grupo5.suiteflow.model.Cliente;
@@ -61,23 +60,11 @@ class GestorReservasTest {
         }
     }
 
-    private static class ReservaDAOEnMemoria extends ReservaArchivoDAO {
-        private byte[] almacen;
-
-        @Override
-        public void guardarReservas(List<Reserva> reservas) {
-            almacen = serializar(new ArrayList<Reserva>(reservas));
-        }
-
-        @Override
-        public List<Reserva> cargarReservas() {
-            return deserializar(almacen);
-        }
-    }
+    
 
     
 
-    private ReservaDAOEnMemoria reservaDAO;
+    private DAOEnMemoria.ReservaEnMemoria reservaDAO;
     private DAOEnMemoria.HabitacionEnMemoria habitacionDAO;
     private GestorHabitaciones gestorHabitaciones;
     private GestorReservas gestor;
@@ -87,7 +74,7 @@ class GestorReservasTest {
 
     @BeforeEach
     void prepararEscenario() {
-        reservaDAO = new ReservaDAOEnMemoria();
+        reservaDAO = new DAOEnMemoria.ReservaEnMemoria();
         habitacionDAO = new DAOEnMemoria.HabitacionEnMemoria();
         gestorHabitaciones = new GestorHabitaciones(habitacionDAO);
         gestor = new GestorReservas(reservaDAO, gestorHabitaciones);
