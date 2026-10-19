@@ -1,6 +1,6 @@
 package com.sv.grupo5.suiteflow.service;
 
-import com.sv.grupo5.suiteflow.dao.HabitacionArchivoDAO;
+import com.sv.grupo5.suiteflow.dao.DAOEnMemoria;
 import com.sv.grupo5.suiteflow.dao.ReservaArchivoDAO;
 import com.sv.grupo5.suiteflow.exception.HabitacionNoDisponibleException;
 import com.sv.grupo5.suiteflow.exception.PersistenciaException;
@@ -75,22 +75,10 @@ class GestorReservasTest {
         }
     }
 
-    private static class HabitacionDAOEnMemoria extends HabitacionArchivoDAO {
-        private byte[] almacen;
-
-        @Override
-        public void guardarHabitaciones(List<Habitacion> habitaciones) {
-            almacen = serializar(new ArrayList<Habitacion>(habitaciones));
-        }
-
-        @Override
-        public List<Habitacion> cargarHabitaciones() {
-            return deserializar(almacen);
-        }
-    }
+    
 
     private ReservaDAOEnMemoria reservaDAO;
-    private HabitacionDAOEnMemoria habitacionDAO;
+    private DAOEnMemoria.HabitacionEnMemoria habitacionDAO;
     private GestorHabitaciones gestorHabitaciones;
     private GestorReservas gestor;
     private Cliente cliente;
@@ -100,7 +88,7 @@ class GestorReservasTest {
     @BeforeEach
     void prepararEscenario() {
         reservaDAO = new ReservaDAOEnMemoria();
-        habitacionDAO = new HabitacionDAOEnMemoria();
+        habitacionDAO = new DAOEnMemoria.HabitacionEnMemoria();
         gestorHabitaciones = new GestorHabitaciones(habitacionDAO);
         gestor = new GestorReservas(reservaDAO, gestorHabitaciones);
         cliente = new Cliente("Juan Pérez", "7777-1234", "juan@example.com");
@@ -209,7 +197,7 @@ class GestorReservasTest {
         Habitacion habitacion = registrarHabitacion(101, 100.0);
         gestor.crearReserva(cliente, habitacion, entrada, salida);
 
-        GestorHabitaciones inventarioVacio = new GestorHabitaciones(new HabitacionDAOEnMemoria());
+        GestorHabitaciones inventarioVacio = new GestorHabitaciones(new DAOEnMemoria.HabitacionEnMemoria());
 
         assertThrows(PersistenciaException.class,
                 () -> new GestorReservas(reservaDAO, inventarioVacio));
