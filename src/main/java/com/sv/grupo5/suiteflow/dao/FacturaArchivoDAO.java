@@ -22,34 +22,6 @@ public class FacturaArchivoDAO extends ArchivoDAO<Factura> implements FacturaDAO
         super(ARCHIVO);
     }
 
-    /**
-     * Guarda la lista completa de facturas, sobrescribiendo la anterior.
-     *
-     * @param facturas lista de facturas a persistir
-     */
-    public void guardarFacturas(List<Factura> facturas) {
-        guardarTodos(facturas);
-    }
-
-    /**
-     * Carga todas las facturas persistidas.
-     *
-     * @return lista de facturas; vacía si aún no hay datos
-     */
-    public List<Factura> cargarFacturas() {
-        return cargarTodos();
-    }
-
-    /**
-     * Agrega una factura a los datos persistidos. Lo invoca ProcesadorFacturas
-     * cada vez que termina de procesar una; equivale a {@link #guardar(Factura)}.
-     *
-     * @param factura factura a agregar
-     */
-    public void guardarFactura(Factura factura) {
-        guardar(factura);
-    }
-
     @Override
     public void guardar(Factura factura) {
         agregar(factura);

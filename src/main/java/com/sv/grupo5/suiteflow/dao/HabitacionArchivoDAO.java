@@ -21,24 +21,6 @@ public class HabitacionArchivoDAO extends ArchivoDAO<Habitacion> implements Habi
         super(ARCHIVO);
     }
 
-    /**
-     * Guarda el inventario completo de habitaciones, sobrescribiendo el anterior.
-     *
-     * @param habitaciones lista de habitaciones a persistir
-     */
-    public void guardarHabitaciones(List<Habitacion> habitaciones) {
-        guardarTodos(habitaciones);
-    }
-
-    /**
-     * Carga todas las habitaciones persistidas.
-     *
-     * @return lista de habitaciones; vacía si aún no hay datos
-     */
-    public List<Habitacion> cargarHabitaciones() {
-        return cargarTodos();
-    }
-
     @Override
     public void guardar(Habitacion habitacion) {
         agregar(habitacion);

@@ -22,20 +22,6 @@ public class ReservaArchivoDAO extends ArchivoDAO<Reserva> implements ReservaDAO
         super(ARCHIVO);
     }
 
-    /**
-     * Sobrescribe el archivo con la lista completa de reservas.
-     *
-     * @param reservas reservas a persistir
-     */
-    public void guardarReservas(List<Reserva> reservas) {
-        guardarTodos(reservas);
-    }
-
-    /** @return reservas persistidas; vacía si aún no hay datos */
-    public List<Reserva> cargarReservas() {
-        return cargarTodos();
-    }
-
     @Override
     public void guardar(Reserva reserva) {
         agregar(reserva);

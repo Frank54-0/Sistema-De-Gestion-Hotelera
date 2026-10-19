@@ -20,24 +20,6 @@ public class ClienteArchivoDAO extends ArchivoDAO<Cliente> implements ClienteDAO
         super(ARCHIVO);
     }
 
-    /**
-     * Guarda la lista completa de clientes, sobrescribiendo la anterior.
-     *
-     * @param clientes lista de clientes a persistir
-     */
-    public void guardarClientes(List<Cliente> clientes) {
-        guardarTodos(clientes);
-    }
-
-    /**
-     * Carga todos los clientes persistidos.
-     *
-     * @return lista de clientes; vacía si aún no hay datos
-     */
-    public List<Cliente> cargarClientes() {
-        return cargarTodos();
-    }
-
     @Override
     public void guardar(Cliente cliente) {
         agregar(cliente);
