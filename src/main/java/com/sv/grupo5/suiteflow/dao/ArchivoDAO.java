@@ -60,7 +60,8 @@ public abstract class ArchivoDAO<T extends java.io.Serializable> {
             // Se serializa una copia: si otro hilo modifica la lista original durante
             // la escritura, writeObject lanzaría ConcurrentModificationException.
             List<T> copia = (entidades == null) ? new ArrayList<T>() : new ArrayList<T>(entidades);
-            try (ObjectOutputStream salida = new ObjectOutputStream(new FileOutputStream(archivo))) {
+            try (FileOutputStream archivoSalida = new FileOutputStream(archivo);
+                 ObjectOutputStream salida = new ObjectOutputStream(archivoSalida)) {
                 salida.writeObject(copia);
             } catch (IOException e) {
                 throw new PersistenciaException(
@@ -82,7 +83,8 @@ public abstract class ArchivoDAO<T extends java.io.Serializable> {
             if (!archivo.exists()) {
                 return new ArrayList<T>();
             }
-            try (ObjectInputStream entrada = new ObjectInputStream(new FileInputStream(archivo))) {
+            try (FileInputStream archivoEntrada = new FileInputStream(archivo);
+                 ObjectInputStream entrada = new ObjectInputStream(archivoEntrada)) {
                 return (List<T>) entrada.readObject();
             } catch (IOException | ClassNotFoundException e) {
                 throw new PersistenciaException(
