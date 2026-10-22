@@ -11,6 +11,8 @@ import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
+import java.util.function.Predicate;
 
 /**
  * Base genérica de la capa DAO. Concentra la serialización sobre archivos .dat
@@ -113,6 +115,62 @@ public abstract class ArchivoDAO<T extends java.io.Serializable> {
     protected List<T> consultarTodos() {
         synchronized (CANDADO_ARCHIVOS) {
             return Collections.unmodifiableList(cargarTodos());
+        }
+    }
+
+    /**
+     * Busca la primera entidad que cumpla la condición.
+     *
+     * @param condicion criterio de búsqueda
+     * @return la entidad encontrada, o un Optional vacío
+     */
+    protected Optional<T> buscarPrimero(Predicate<T> condicion) {
+        synchronized (CANDADO_ARCHIVOS) {
+            for (T entidad : cargarTodos()) {
+                if (condicion.test(entidad)) {
+                    return Optional.of(entidad);
+                }
+            }
+            return Optional.empty();
+        }
+    }
+
+    /**
+     * Reemplaza la primera entidad que cumpla la condición por la nueva.
+     * Leer, reemplazar y guardar ocurren bajo el mismo candado.
+     *
+     * @param condicion criterio para ubicar la entidad a reemplazar
+     * @param nueva     entidad que ocupa su lugar
+     * @return true si se encontró y reemplazó, false si no existía
+     */
+    protected boolean reemplazarPrimero(Predicate<T> condicion, T nueva) {
+        synchronized (CANDADO_ARCHIVOS) {
+            List<T> entidades = cargarTodos();
+            for (int i = 0; i < entidades.size(); i++) {
+                if (condicion.test(entidades.get(i))) {
+                    entidades.set(i, nueva);
+                    guardarTodos(entidades);
+                    return true;
+                }
+            }
+            return false;
+        }
+    }
+
+    /**
+     * Elimina las entidades que cumplan la condición.
+     *
+     * @param condicion criterio para ubicar lo que se elimina
+     * @return true si se eliminó algo, false si no se encontró nada
+     */
+    protected boolean eliminarSi(Predicate<T> condicion) {
+        synchronized (CANDADO_ARCHIVOS) {
+            List<T> entidades = cargarTodos();
+            boolean elimino = entidades.removeIf(condicion);
+            if (elimino) {
+                guardarTodos(entidades);
+            }
+            return elimino;
         }
     }
 

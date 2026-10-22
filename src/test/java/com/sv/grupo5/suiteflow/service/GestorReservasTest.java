@@ -1,15 +1,13 @@
 package com.sv.grupo5.suiteflow.service;
 
-import com.sv.grupo5.suiteflow.dao.HabitacionDAO;
-import com.sv.grupo5.suiteflow.dao.ReservaDAO;
+import com.sv.grupo5.suiteflow.dao.HabitacionArchivoDAO;
+import com.sv.grupo5.suiteflow.dao.ReservaArchivoDAO;
 import com.sv.grupo5.suiteflow.exception.HabitacionNoDisponibleException;
 import com.sv.grupo5.suiteflow.exception.PersistenciaException;
 import com.sv.grupo5.suiteflow.model.Cliente;
 import com.sv.grupo5.suiteflow.model.Habitacion;
 import com.sv.grupo5.suiteflow.model.HabitacionSencilla;
 import com.sv.grupo5.suiteflow.model.Reserva;
-import com.sv.grupo5.suiteflow.service.GestorHabitaciones;
-import com.sv.grupo5.suiteflow.service.GestorReservas;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -63,7 +61,7 @@ class GestorReservasTest {
         }
     }
 
-    private static class ReservaDAOEnMemoria extends ReservaDAO {
+    private static class ReservaDAOEnMemoria extends ReservaArchivoDAO {
         private byte[] almacen;
 
         @Override
@@ -77,7 +75,7 @@ class GestorReservasTest {
         }
     }
 
-    private static class HabitacionDAOEnMemoria extends HabitacionDAO {
+    private static class HabitacionDAOEnMemoria extends HabitacionArchivoDAO {
         private byte[] almacen;
 
         @Override

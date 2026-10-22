@@ -1,8 +1,7 @@
 package com.sv.grupo5.suiteflow.service;
 
-import com.sv.grupo5.suiteflow.dao.FacturaDAO;
+import com.sv.grupo5.suiteflow.dao.FacturaArchivoDAO;
 import com.sv.grupo5.suiteflow.model.*;
-import com.sv.grupo5.suiteflow.service.ProcesadorFacturas;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -19,7 +18,7 @@ import static org.junit.jupiter.api.Assertions.*;
 class ProcesadorFacturasTest {
 
     /** DAO de prueba: guarda en memoria en vez de en disco. */
-    private static class FacturaDAOEnMemoria extends FacturaDAO {
+    private static class FacturaDAOEnMemoria extends FacturaArchivoDAO {
         private final List<Factura> almacen = new ArrayList<Factura>();
 
         @Override
