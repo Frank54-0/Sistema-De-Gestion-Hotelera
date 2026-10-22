@@ -1,5 +1,6 @@
 package com.sv.grupo5.suiteflow.service;
 
+import com.sv.grupo5.suiteflow.dao.HabitacionArchivoDAO;
 import com.sv.grupo5.suiteflow.dao.HabitacionDAO;
 import com.sv.grupo5.suiteflow.model.Habitacion;
 
@@ -11,8 +12,9 @@ import java.util.List;
  * Gestiona el inventario de habitaciones del hotel: alta, cambio de estado
  * y consultas de disponibilidad.
  *
- * Capa de Servicio. Nunca toca archivos directamente: delega la persistencia
- * en HabitacionDAO.
+ * Capa de Servicio. Nunca toca archivos ni SQL directamente: delega la
+ * persistencia en la interfaz HabitacionDAO, de modo que funciona igual con
+ * archivos, con MySQL o con un DAO de prueba.
  *
  * Concurrencia: la lista interna se mantiene en memoria y es leída y escrita
  * por varios hilos, por lo que todos los métodos que la recorren o modifican
@@ -26,11 +28,11 @@ public class GestorHabitaciones {
     private final HabitacionDAO habitacionDAO;
 
     /**
-     * Construye el gestor usando el DAO por defecto y carga el inventario
-     * previamente persistido en datos/habitaciones.dat.
+     * Construye el gestor usando el DAO de archivos por defecto y carga el
+     * inventario previamente persistido en datos/habitaciones.dat.
      */
     public GestorHabitaciones() {
-        this(new HabitacionDAO());
+        this(new HabitacionArchivoDAO());
     }
 
     /**
@@ -45,7 +47,7 @@ public class GestorHabitaciones {
             throw new IllegalArgumentException("El DAO de habitaciones no puede ser null");
         }
         this.habitacionDAO = habitacionDAO;
-        this.habitaciones = new ArrayList<Habitacion>(habitacionDAO.cargarHabitaciones());
+        this.habitaciones = new ArrayList<Habitacion>(habitacionDAO.listarTodos());
     }
 
     /**
@@ -61,7 +63,7 @@ public class GestorHabitaciones {
             return false;
         }
         habitaciones.add(habitacion);
-        habitacionDAO.guardarHabitaciones(habitaciones);
+        habitacionDAO.guardar(habitacion);
         return true;
     }
 
@@ -79,7 +81,7 @@ public class GestorHabitaciones {
             return false;
         }
         habitacion.setEstado(estado);
-        habitacionDAO.guardarHabitaciones(habitaciones);
+        habitacionDAO.actualizar(habitacion);
         return true;
     }
 

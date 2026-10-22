@@ -1,5 +1,6 @@
 package com.sv.grupo5.suiteflow.service;
 
+import com.sv.grupo5.suiteflow.dao.ReservaArchivoDAO;
 import com.sv.grupo5.suiteflow.dao.ReservaDAO;
 import com.sv.grupo5.suiteflow.exception.HabitacionNoDisponibleException;
 import com.sv.grupo5.suiteflow.exception.PersistenciaException;
@@ -15,6 +16,10 @@ import java.util.List;
 /**
  * Gestiona el ciclo de vida de las reservas: creación, cancelación y consulta.
  *
+ * <p><b>Capa de Servicio.</b> Nunca toca archivos ni SQL directamente: delega la
+ * persistencia en la interfaz {@link ReservaDAO}, de modo que funciona igual con
+ * archivos, con MySQL o con un DAO de prueba.</p>
+ *
  * <p><b>Concurrencia.</b> Dos operadores pueden intentar reservar la misma
  * habitación al mismo tiempo. Sin sincronizar, ambos podrían ver la habitación
  * DISPONIBLE antes de que alguno la ocupe (condición de carrera
@@ -25,9 +30,9 @@ import java.util.List;
  * <p><b>Estado de las habitaciones.</b> Este gestor nunca llama a
  * {@code Habitacion.setEstado()}: todo cambio pasa por
  * {@link GestorHabitaciones#cambiarEstado}, que es el único punto de entrada y
- * además persiste en {@code habitaciones.dat}. Orden de candados: siempre
- * GestorReservas y luego GestorHabitaciones. GestorHabitaciones nunca llama a
- * este gestor, por lo que no puede haber deadlock (hallazgo #2 de QA).</p>
+ * además persiste el cambio. Orden de candados: siempre GestorReservas y luego
+ * GestorHabitaciones. GestorHabitaciones nunca llama a este gestor, por lo que
+ * no puede haber deadlock (hallazgo #2 de QA).</p>
  */
 public class GestorReservas {
 
@@ -36,18 +41,19 @@ public class GestorReservas {
     private final GestorHabitaciones gestorHabitaciones;
 
     /**
-     * Crea el gestor con el DAO por defecto ({@code datos/reservas.dat}).
+     * Crea el gestor con el DAO de archivos por defecto ({@code datos/reservas.dat}).
      *
      * @param gestorHabitaciones inventario del hotel; debe ser la misma instancia
      *                           que usa el resto del sistema, o volverían a
      *                           existir dos copias de cada habitación
      */
     public GestorReservas(GestorHabitaciones gestorHabitaciones) {
-        this(new ReservaDAO(), gestorHabitaciones);
+        this(new ReservaArchivoDAO(), gestorHabitaciones);
     }
 
     /**
-     * Crea el gestor con un DAO indicado, lo que permite inyectar uno de prueba.
+     * Crea el gestor con un DAO indicado, lo que permite inyectar uno de prueba
+     * o, más adelante, uno JDBC.
      *
      * @param reservaDAO         DAO encargado de la persistencia
      * @param gestorHabitaciones inventario del hotel
@@ -63,11 +69,11 @@ public class GestorReservas {
         }
         this.reservaDAO = reservaDAO;
         this.gestorHabitaciones = gestorHabitaciones;
-        this.reservas = new ArrayList<Reserva>(reservaDAO.cargarReservas());
+        this.reservas = new ArrayList<Reserva>(reservaDAO.listarTodos());
         reenlazarHabitaciones();
     }
 
-    // Las reservas llegan del .dat con la habitación en null (es transient).
+    // Las reservas llegan del almacén con la habitación en null (es transient).
     // Se enlazan al objeto del inventario para que ambos gestores compartan la misma instancia.
     private void reenlazarHabitaciones() {
         for (Reserva reserva : reservas) {
@@ -96,7 +102,7 @@ public class GestorReservas {
      * @throws HabitacionNoDisponibleException si la habitación no está DISPONIBLE
      */
     public synchronized Reserva crearReserva(Cliente cliente, Habitacion habitacion,
-            Date fechaEntrada, Date fechaSalida)
+                                             Date fechaEntrada, Date fechaSalida)
             throws HabitacionNoDisponibleException {
 
         validarDatosReserva(cliente, habitacion, fechaEntrada, fechaSalida);
@@ -119,7 +125,7 @@ public class GestorReservas {
             Reserva reserva = new Reserva(cliente, real, fechaEntrada, fechaSalida);
             gestorHabitaciones.cambiarEstado(real.getNumero(), Habitacion.OCUPADA);
             reservas.add(reserva);
-            reservaDAO.guardarReservas(reservas);
+            reservaDAO.guardar(reserva);
 
             return reserva;
         }
@@ -138,7 +144,7 @@ public class GestorReservas {
             return false;
         }
         reserva.cancelar();
-        reservaDAO.guardarReservas(reservas);
+        reservaDAO.actualizar(reserva);
         gestorHabitaciones.cambiarEstado(reserva.getNumeroHabitacion(), Habitacion.DISPONIBLE);
         return true;
     }
@@ -213,7 +219,7 @@ public class GestorReservas {
     }
 
     private void validarDatosReserva(Cliente cliente, Habitacion habitacion,
-            Date fechaEntrada, Date fechaSalida) {
+                                     Date fechaEntrada, Date fechaSalida) {
         if (cliente == null) {
             throw new IllegalArgumentException("La reserva requiere un cliente");
         }

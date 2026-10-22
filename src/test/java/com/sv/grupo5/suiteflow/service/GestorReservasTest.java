@@ -1,15 +1,12 @@
 package com.sv.grupo5.suiteflow.service;
 
-import com.sv.grupo5.suiteflow.dao.HabitacionDAO;
-import com.sv.grupo5.suiteflow.dao.ReservaDAO;
+import com.sv.grupo5.suiteflow.dao.DAOEnMemoria;
 import com.sv.grupo5.suiteflow.exception.HabitacionNoDisponibleException;
 import com.sv.grupo5.suiteflow.exception.PersistenciaException;
 import com.sv.grupo5.suiteflow.model.Cliente;
 import com.sv.grupo5.suiteflow.model.Habitacion;
 import com.sv.grupo5.suiteflow.model.HabitacionSencilla;
 import com.sv.grupo5.suiteflow.model.Reserva;
-import com.sv.grupo5.suiteflow.service.GestorHabitaciones;
-import com.sv.grupo5.suiteflow.service.GestorReservas;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -63,36 +60,12 @@ class GestorReservasTest {
         }
     }
 
-    private static class ReservaDAOEnMemoria extends ReservaDAO {
-        private byte[] almacen;
+    
 
-        @Override
-        public void guardarReservas(List<Reserva> reservas) {
-            almacen = serializar(new ArrayList<Reserva>(reservas));
-        }
+    
 
-        @Override
-        public List<Reserva> cargarReservas() {
-            return deserializar(almacen);
-        }
-    }
-
-    private static class HabitacionDAOEnMemoria extends HabitacionDAO {
-        private byte[] almacen;
-
-        @Override
-        public void guardarHabitaciones(List<Habitacion> habitaciones) {
-            almacen = serializar(new ArrayList<Habitacion>(habitaciones));
-        }
-
-        @Override
-        public List<Habitacion> cargarHabitaciones() {
-            return deserializar(almacen);
-        }
-    }
-
-    private ReservaDAOEnMemoria reservaDAO;
-    private HabitacionDAOEnMemoria habitacionDAO;
+    private DAOEnMemoria.ReservaEnMemoria reservaDAO;
+    private DAOEnMemoria.HabitacionEnMemoria habitacionDAO;
     private GestorHabitaciones gestorHabitaciones;
     private GestorReservas gestor;
     private Cliente cliente;
@@ -101,8 +74,8 @@ class GestorReservasTest {
 
     @BeforeEach
     void prepararEscenario() {
-        reservaDAO = new ReservaDAOEnMemoria();
-        habitacionDAO = new HabitacionDAOEnMemoria();
+        reservaDAO = new DAOEnMemoria.ReservaEnMemoria();
+        habitacionDAO = new DAOEnMemoria.HabitacionEnMemoria();
         gestorHabitaciones = new GestorHabitaciones(habitacionDAO);
         gestor = new GestorReservas(reservaDAO, gestorHabitaciones);
         cliente = new Cliente("Juan Pérez", "7777-1234", "juan@example.com");
@@ -211,7 +184,7 @@ class GestorReservasTest {
         Habitacion habitacion = registrarHabitacion(101, 100.0);
         gestor.crearReserva(cliente, habitacion, entrada, salida);
 
-        GestorHabitaciones inventarioVacio = new GestorHabitaciones(new HabitacionDAOEnMemoria());
+        GestorHabitaciones inventarioVacio = new GestorHabitaciones(new DAOEnMemoria.HabitacionEnMemoria());
 
         assertThrows(PersistenciaException.class,
                 () -> new GestorReservas(reservaDAO, inventarioVacio));
