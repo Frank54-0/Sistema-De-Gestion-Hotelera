@@ -10,15 +10,7 @@ import com.sv.grupo5.suiteflow.model.Reserva;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.util.ArrayList;
 import java.util.Date;
-import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -36,34 +28,6 @@ import static org.junit.jupiter.api.Assertions.*;
  * reinicio.</p>
  */
 class GestorReservasTest {
-
-    private static byte[] serializar(Object objeto) {
-        try (ByteArrayOutputStream bytes = new ByteArrayOutputStream();
-             ObjectOutputStream salida = new ObjectOutputStream(bytes)) {
-            salida.writeObject(objeto);
-            salida.flush();
-            return bytes.toByteArray();
-        } catch (IOException e) {
-            throw new IllegalStateException(e);
-        }
-    }
-
-    @SuppressWarnings("unchecked")
-    private static <T> List<T> deserializar(byte[] datos) {
-        if (datos == null) {
-            return new ArrayList<T>();
-        }
-        try (ObjectInputStream entrada = new ObjectInputStream(new ByteArrayInputStream(datos))) {
-            return (List<T>) entrada.readObject();
-        } catch (IOException | ClassNotFoundException e) {
-            throw new IllegalStateException(e);
-        }
-    }
-
-    
-
-    
-
     private DAOEnMemoria.ReservaEnMemoria reservaDAO;
     private DAOEnMemoria.HabitacionEnMemoria habitacionDAO;
     private GestorHabitaciones gestorHabitaciones;

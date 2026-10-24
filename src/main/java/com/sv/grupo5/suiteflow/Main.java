@@ -61,9 +61,6 @@ public class Main {
         // 4. Prueba de sincronización: dos hilos compiten por la habitación 102.
         //    Se conserva como evidencia de que crearReserva() es thread-safe.
         ejecutarPruebaConcurrencia(gestorHab, gestorRes);
-        Cliente cliente1 = new Cliente("Juan Pérez", "7777-1234", "juan@example.com");
-        Cliente cliente2 = new Cliente("María García", "7777-5678", "maria@example.com");
-
         // 5. Capa de Control: el Controller conecta la Vista con el Servicio
         ReservaController reservaController = new ReservaController(gestorRes, gestorHab);
 
