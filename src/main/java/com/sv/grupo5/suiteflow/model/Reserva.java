@@ -2,6 +2,9 @@ package com.sv.grupo5.suiteflow.model;
 
 import java.io.Serializable;
 import java.util.Date;
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -168,7 +171,20 @@ public class Reserva implements Serializable {
     }
 
     /**
-     * Calcula el costo de la habitación más los servicios adicionales.
+     * Cuenta las noches de la estadía: días de calendario entre la entrada y la
+     * salida, con un mínimo de 1.
+     *
+     * @return cantidad de noches
+     */
+    public long calcularNoches() {
+        LocalDate entrada = fechaEntrada.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+        LocalDate salida = fechaSalida.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+        return Math.max(1, ChronoUnit.DAYS.between(entrada, salida));
+    }
+
+    /**
+     * Calcula el total: precio de una noche por la cantidad de noches, más los
+     * servicios adicionales.
      *
      * <p>Usa factor de demanda 1.0 de forma fija; conectar el factor real está
      * pendiente de definición con el Architect (hallazgo #5 de QA).</p>
@@ -182,7 +198,7 @@ public class Reserva implements Serializable {
             throw new IllegalStateException(
                     "La reserva " + id + " no está enlazada con la habitación " + numeroHabitacion);
         }
-        double total = habitacion.calcularPrecio(1.0);
+        double total = habitacion.calcularPrecio(1.0) * calcularNoches();
         for (ServicioAdicional servicio : servicios) {
             total += servicio.getCosto();
         }
