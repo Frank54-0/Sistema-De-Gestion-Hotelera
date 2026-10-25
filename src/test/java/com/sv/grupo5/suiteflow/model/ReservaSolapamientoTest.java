@@ -17,7 +17,7 @@ class ReservaSolapamientoTest {
 
     // Reserva existente del día 10 al 15.
     private Reserva reservaDel10Al15() {
-        Cliente cliente = new Cliente("Ana", "7000-0000", "ana@correo.com");
+        Cliente cliente = new Cliente("Ana", "70000000", "ana@correo.com");
         return new Reserva(cliente, new HabitacionSencilla(101, 100.0), dia(10), dia(15));
     }
 

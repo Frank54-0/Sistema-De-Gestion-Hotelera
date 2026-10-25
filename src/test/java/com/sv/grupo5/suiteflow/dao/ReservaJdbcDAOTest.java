@@ -45,7 +45,7 @@ class ReservaJdbcDAOTest {
 
     private Reserva reservaDe(int numeroHabitacion, int entrada, int salida) {
         Habitacion habitacion = habitacionDAO.buscarPorId(numeroHabitacion).orElseThrow();
-        Cliente cliente = new Cliente("Cliente de prueba", "7000-0000", "prueba@correo.com");
+        Cliente cliente = new Cliente("Cliente de prueba", "70000000", "prueba@correo.com");
         return new Reserva(cliente, habitacion, dia(entrada), dia(salida));
     }
 

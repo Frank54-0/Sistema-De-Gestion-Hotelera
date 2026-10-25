@@ -90,11 +90,13 @@ public class Main {
         Date salida = new Date(entrada.getTime() + 48L * 60 * 60 * 1000);
 
         List<NuevaReservaDTO> lote = new ArrayList<NuevaReservaDTO>();
-        for (int i = 1; i <= 8; i++) {
-            lote.add(new NuevaReservaDTO("Cliente " + i, "7000-000" + i,
-                    "cliente" + i + "@mail.com", 103, entrada, salida));
+        String[] nombres = {"Ana Lopez", "Bruno Diaz", "Carla Mena", "Diego Rios",
+                "Elena Paz", "Fabio Cruz", "Gina Sosa", "Hugo Vega"};
+        for (int i = 0; i < nombres.length; i++) {
+            lote.add(new NuevaReservaDTO(nombres[i], "7000000" + (i + 1),
+                    "cliente" + (i + 1) + "@mail.com", 103, entrada, salida));
         }
-        lote.add(new NuevaReservaDTO("Cliente 9", "7000-0009", "cliente9@mail.com", 104, entrada, salida));
+        lote.add(new NuevaReservaDTO("Ivan Mora", "70000009", "cliente9@mail.com", 104, entrada, salida));
 
         try (ProcesadorSolicitudesReserva procesador =
                      new ProcesadorSolicitudesReserva(controlador, DataSourceConfig.HILOS_RESERVA)) {

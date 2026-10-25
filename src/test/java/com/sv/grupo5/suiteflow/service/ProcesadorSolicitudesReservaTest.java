@@ -47,7 +47,7 @@ class ProcesadorSolicitudesReservaTest {
     }
 
     private NuevaReservaDTO solicitud(int i, int habitacion) {
-        return new NuevaReservaDTO("Cliente " + i, "7777-000" + i, "c" + i + "@mail.com",
+        return new NuevaReservaDTO("Cliente Prueba", "7777000" + i, "c" + i + "@mail.com",
                 habitacion, entrada, salida);
     }
 

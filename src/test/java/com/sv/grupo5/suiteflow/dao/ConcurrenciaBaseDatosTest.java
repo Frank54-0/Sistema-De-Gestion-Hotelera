@@ -54,7 +54,7 @@ class ConcurrenciaBaseDatosTest {
 
     private Reserva reservaDe(int numeroHabitacion) {
         Habitacion habitacion = habitacionDAO.buscarPorId(numeroHabitacion).orElseThrow();
-        Cliente cliente = new Cliente("Cliente " + UUID.randomUUID(), "7000-0000", "prueba@correo.com");
+        Cliente cliente = new Cliente("Cliente Prueba", "70000000", "prueba@correo.com");
         Date entrada = java.sql.Date.valueOf(LocalDate.of(2026, 12, 10));
         Date salida = java.sql.Date.valueOf(LocalDate.of(2026, 12, 13));
         return new Reserva(cliente, habitacion, entrada, salida);
