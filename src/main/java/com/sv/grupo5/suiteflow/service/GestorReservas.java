@@ -123,9 +123,12 @@ public class GestorReservas {
             }
 
             Reserva reserva = new Reserva(cliente, real, fechaEntrada, fechaSalida);
+
+            // El DAO verifica y guarda a la vez; si rechaza, la memoria no se toca.
+            reservaDAO.guardarSiHabitacionLibre(reserva);
+
             gestorHabitaciones.cambiarEstado(real.getNumero(), Habitacion.OCUPADA);
             reservas.add(reserva);
-            reservaDAO.guardar(reserva);
 
             return reserva;
         }

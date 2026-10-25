@@ -12,22 +12,24 @@ import com.sv.grupo5.suiteflow.model.Reserva;
 public interface ReservaDAO extends CrudDAO<Reserva, String> {
 
     /**
-     * Guarda la reserva solo si su habitación sigue libre para esas fechas, de
-     * forma atómica: verificar y guardar ocurren sin que otro hilo (u otro
-     * programa conectado a la misma base de datos) pueda colarse en medio.
-     *
-     * <p>La implementación por defecto simplemente guarda, con candado de la JVM.
-     * Sirve para los DAO de archivo y de memoria, que no tienen candado propio.
-     * {@code ReservaJdbcDAO} la reemplaza por una transacción con
-     * {@code SELECT ... FOR UPDATE}, cuyo candado vive en la base de datos y por
-     * eso protege también entre procesos distintos.</p>
+     * Guarda la reserva solo si la habitación está libre en esas fechas, sin que
+     * otro hilo se cuele entre la verificación y el guardado. Esta versión sirve
+     * para los DAO de archivo y memoria; {@code ReservaJdbcDAO} usa una transacción.
      *
      * @param reserva reserva a guardar
-     * @throws HabitacionNoDisponibleException si la habitación está en
-     *         mantenimiento, no existe o ya tiene una reserva activa que se solapa
+     * @throws HabitacionNoDisponibleException si ya hay una reserva activa que se cruza
      */
     default void guardarSiHabitacionLibre(Reserva reserva) throws HabitacionNoDisponibleException {
         synchronized (this) {
+            for (Reserva existente : listarTodos()) {
+                if (existente.estaActiva()
+                        && existente.getNumeroHabitacion() == reserva.getNumeroHabitacion()
+                        && existente.seSolapaCon(reserva.getFechaEntrada(), reserva.getFechaSalida())) {
+                    throw new HabitacionNoDisponibleException(
+                            "La habitación " + reserva.getNumeroHabitacion()
+                                    + " ya está reservada en esas fechas");
+                }
+            }
             guardar(reserva);
         }
     }
