@@ -24,14 +24,36 @@ public class Cliente implements Serializable {
      * @param nombre   nombre completo del cliente
      * @param telefono número de teléfono de contacto
      * @param email    correo electrónico de contacto
-     * @throws IllegalArgumentException si algún dato tiene formato inválido
+     * @throws IllegalArgumentException si el nombre o teléfono son inválidos
      */
     public Cliente(String nombre, String telefono, String email) {
-        this.id = UUID.randomUUID().toString();
-        // Llamamos a los setters para aprovechar las validaciones centralizadas
-        setNombre(nombre);
-        setTelefono(telefono);
-        setEmail(email);
+        this(UUID.randomUUID().toString(), nombre, telefono, email);
+    }
+
+    /**
+     * Reconstruye un cliente que ya existe (por ejemplo, leído de la base de
+     * datos), conservando su id en lugar de generar uno nuevo.
+     *
+     * @param id       identificador existente del cliente
+     * @param nombre   nombre completo del cliente
+     * @param telefono número de teléfono de contacto
+     * @param email    correo electrónico de contacto
+     * @throws IllegalArgumentException si el id, el nombre o el teléfono son inválidos
+     */
+    public Cliente(String id, String nombre, String telefono, String email) {
+        if (id == null || id.trim().isEmpty()) {
+            throw new IllegalArgumentException("El id del cliente no puede estar vacío");
+        }
+        if (nombre == null || nombre.trim().isEmpty()) {
+            throw new IllegalArgumentException("El nombre del cliente no puede estar vacío");
+        }
+        if (telefono == null || telefono.trim().isEmpty()) {
+            throw new IllegalArgumentException("El teléfono del cliente no puede estar vacío");
+        }
+        this.id = id;
+        this.nombre = nombre;
+        this.telefono = telefono;
+        this.email = email;
     }
 
     public String getId() {
@@ -43,12 +65,7 @@ public class Cliente implements Serializable {
     }
 
     public void setNombre(String nombre) {
-        String limpio = (nombre == null) ? null : nombre.trim();
-        if (limpio == null || !limpio.matches("^[a-zA-ZáéíóúÁÉÍÓÚñÑ\\s]{3,50}$")) {
-            throw new IllegalArgumentException(
-                    "Error: El nombre solo puede contener letras y espacios (mínimo 3 caracteres).");
-        }
-        this.nombre = limpio;
+        this.nombre = nombre;
     }
 
     public String getTelefono() {
@@ -56,12 +73,7 @@ public class Cliente implements Serializable {
     }
 
     public void setTelefono(String telefono) {
-        // Valida que sean exactamente 8 números sin espacios ni letras.
-        if (telefono == null || !telefono.matches("^\\d{8}$")) {
-            throw new IllegalArgumentException(
-                    "Error: El teléfono debe contener exactamente 8 números.");
-        }
-        this.telefono = telefono.trim();
+        this.telefono = telefono;
     }
 
     public String getEmail() {
@@ -69,12 +81,7 @@ public class Cliente implements Serializable {
     }
 
     public void setEmail(String email) {
-        // Patrón estándar para validar correos electrónicos
-        if (email == null || !email.matches("^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,6}$")) {
-            throw new IllegalArgumentException(
-                    "Error: El correo no tiene un formato válido (ejemplo: usuario@correo.com).");
-        }
-        this.email = email.trim();
+        this.email = email;
     }
 
     @Override

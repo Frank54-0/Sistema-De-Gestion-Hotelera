@@ -58,6 +58,41 @@ public class Reserva implements Serializable {
         this.servicios = new ArrayList<>();
     }
 
+    /**
+     * Reconstruye una reserva que ya existe (por ejemplo, leída de la base de
+     * datos), conservando su id y su estado. La habitación queda en null hasta
+     * que GestorReservas la reenlace con el inventario; los servicios adicionales
+     * empiezan vacíos porque la tabla de reservas no los guarda.
+     *
+     * @param id               identificador existente de la reserva
+     * @param cliente          cliente que realizó la reserva
+     * @param numeroHabitacion número de la habitación reservada
+     * @param fechaEntrada     fecha de check-in
+     * @param fechaSalida      fecha de check-out
+     * @param estado           ACTIVA, CANCELADA o FINALIZADA
+     * @throws IllegalArgumentException si falta el id o el cliente, o el estado no es válido
+     */
+    public Reserva(String id, Cliente cliente, int numeroHabitacion,
+                   Date fechaEntrada, Date fechaSalida, String estado) {
+        if (id == null || id.trim().isEmpty()) {
+            throw new IllegalArgumentException("El id de la reserva no puede estar vacío");
+        }
+        if (cliente == null) {
+            throw new IllegalArgumentException("La reserva requiere un cliente");
+        }
+        if (!ACTIVA.equals(estado) && !CANCELADA.equals(estado) && !FINALIZADA.equals(estado)) {
+            throw new IllegalArgumentException("Estado de reserva inválido: '" + estado + "'");
+        }
+        this.id = id;
+        this.cliente = cliente;
+        this.habitacion = null;
+        this.numeroHabitacion = numeroHabitacion;
+        this.fechaEntrada = fechaEntrada;
+        this.fechaSalida = fechaSalida;
+        this.estado = estado;
+        this.servicios = new ArrayList<>();
+    }
+
     /** @return identificador único de la reserva */
     public String getId() {
         return id;
@@ -157,6 +192,26 @@ public class Reserva implements Serializable {
     /** Cambia el estado de la reserva a {@link #CANCELADA}. */
     public void cancelar() {
         this.estado = CANCELADA;
+    }
+
+    /**
+     * Indica si esta reserva ocupa la habitación en algún día del rango pedido.
+     *
+     * <p>Dos rangos se solapan cuando cada uno empieza antes de que el otro
+     * termine: {@code entradaExistente < salidaNueva && salidaExistente > entradaNueva}.
+     * Si una reserva sale el mismo día en que otra entra, NO se solapan (relevo
+     * el mismo día).</p>
+     *
+     * @param entrada fecha de check-in del rango a comparar
+     * @param salida  fecha de check-out del rango a comparar
+     * @return true si los rangos se solapan
+     * @throws IllegalArgumentException si alguna fecha es null
+     */
+    public boolean seSolapaCon(Date entrada, Date salida) {
+        if (entrada == null || salida == null) {
+            throw new IllegalArgumentException("Las fechas a comparar no pueden ser null");
+        }
+        return fechaEntrada.before(salida) && fechaSalida.after(entrada);
     }
 
     /** @return true si el estado es ACTIVA */

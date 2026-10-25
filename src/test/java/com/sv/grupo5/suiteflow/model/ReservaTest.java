@@ -1,6 +1,5 @@
 package com.sv.grupo5.suiteflow.model;
 
-import com.sv.grupo5.suiteflow.model.*;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
