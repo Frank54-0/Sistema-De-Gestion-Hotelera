@@ -20,7 +20,7 @@ import java.util.Queue;
  * y enviarlo al cliente. Si eso se hiciera de forma síncrona, el recepcionista
  * quedaría bloqueado en cada cobro. Aquí las facturas se encolan y este hilo
  * dedicado las va procesando, sin detener el resto de operaciones del hotel.
- *
+
  * <b>Coordinación entre hilos.</b> El hilo espera con wait() cuando la cola
  * está vacía y es despertado con notifyAll() al encolarse una factura o al
  * pedirse el apagado. El trabajo pesado (procesarFactura) se ejecuta FUERA

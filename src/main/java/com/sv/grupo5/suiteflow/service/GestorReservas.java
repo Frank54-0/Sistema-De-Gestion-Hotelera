@@ -123,9 +123,12 @@ public class GestorReservas {
             }
 
             Reserva reserva = new Reserva(cliente, real, fechaEntrada, fechaSalida);
+
+            // El DAO verifica y guarda a la vez; si rechaza, la memoria no se toca.
+            reservaDAO.guardarSiHabitacionLibre(reserva);
+
             gestorHabitaciones.cambiarEstado(real.getNumero(), Habitacion.OCUPADA);
             reservas.add(reserva);
-            reservaDAO.guardar(reserva);
 
             return reserva;
         }
@@ -232,6 +235,49 @@ public class GestorReservas {
         if (!fechaSalida.after(fechaEntrada)) {
             throw new IllegalArgumentException(
                     "La fecha de salida debe ser posterior a la fecha de entrada");
+        }
+
+        // NUEVAS VALIDACIONES
+
+        // 1. VALIDAR FORMATO DE AÑOS (4 dígitos)
+        java.util.Calendar calEntrada = java.util.Calendar.getInstance();
+        calEntrada.setTime(fechaEntrada);
+        int anioEntrada = calEntrada.get(java.util.Calendar.YEAR);
+        if (anioEntrada < 2024 || anioEntrada > 2100) {
+            throw new IllegalArgumentException(
+                    "El año de entrada (" + anioEntrada + ") es inválido. Usa 4 dígitos (ej. 2026).");
+        }
+
+        java.util.Calendar calSalida = java.util.Calendar.getInstance();
+        calSalida.setTime(fechaSalida);
+        int anioSalida = calSalida.get(java.util.Calendar.YEAR);
+        if (anioSalida < 2024 || anioSalida > 2100) {
+            throw new IllegalArgumentException(
+                    "El año de salida (" + anioSalida + ") es inválido. Usa 4 dígitos (ej. 2026).");
+        }
+
+        // 2. VALIDAR COHERENCIA (Mínimo 1 noche - ESTO REEMPLAZA LO ANTERIOR)
+        if (calEntrada.get(java.util.Calendar.YEAR) == calSalida.get(java.util.Calendar.YEAR) &&
+                calEntrada.get(java.util.Calendar.DAY_OF_YEAR) == calSalida.get(java.util.Calendar.DAY_OF_YEAR)) {
+            throw new IllegalArgumentException(
+                    "Error: La reserva mínima es de 1 noche. La fecha de salida no puede ser el mismo día que la entrada.");
+        }
+
+        if (fechaSalida.before(fechaEntrada)) {
+            throw new IllegalArgumentException(
+                    "Error: La fecha de salida debe ser posterior a la fecha de entrada.");
+        }
+
+        // 3. EVITAR RESERVAS EN EL PASADO
+        java.util.Calendar hoy = java.util.Calendar.getInstance();
+        hoy.set(java.util.Calendar.HOUR_OF_DAY, 0);
+        hoy.set(java.util.Calendar.MINUTE, 0);
+        hoy.set(java.util.Calendar.SECOND, 0);
+        hoy.set(java.util.Calendar.MILLISECOND, 0);
+
+        if (fechaEntrada.before(hoy.getTime())) {
+            throw new IllegalArgumentException(
+                    "La fecha de entrada no puede ser en el pasado.");
         }
     }
 }

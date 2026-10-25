@@ -1,6 +1,5 @@
 package com.sv.grupo5.suiteflow.service;
 
-import com.sv.grupo5.suiteflow.service.CalculadorTarifas;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;

@@ -12,3 +12,6 @@ out/
 # Sistema operativo
 .DS_Store
 Thumbs.db
+
+# Datos locales de la persistencia en archivos (.dat)
+datos/

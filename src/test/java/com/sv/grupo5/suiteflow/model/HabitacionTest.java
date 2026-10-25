@@ -1,9 +1,5 @@
 package com.sv.grupo5.suiteflow.model;
 
-import com.sv.grupo5.suiteflow.model.Habitacion;
-import com.sv.grupo5.suiteflow.model.HabitacionDoble;
-import com.sv.grupo5.suiteflow.model.HabitacionSencilla;
-import com.sv.grupo5.suiteflow.model.Suite;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
