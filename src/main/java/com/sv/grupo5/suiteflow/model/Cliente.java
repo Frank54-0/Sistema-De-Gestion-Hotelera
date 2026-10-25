@@ -27,13 +27,30 @@ public class Cliente implements Serializable {
      * @throws IllegalArgumentException si el nombre o teléfono son inválidos
      */
     public Cliente(String nombre, String telefono, String email) {
+        this(UUID.randomUUID().toString(), nombre, telefono, email);
+    }
+
+    /**
+     * Reconstruye un cliente que ya existe (por ejemplo, leído de la base de
+     * datos), conservando su id en lugar de generar uno nuevo.
+     *
+     * @param id       identificador existente del cliente
+     * @param nombre   nombre completo del cliente
+     * @param telefono número de teléfono de contacto
+     * @param email    correo electrónico de contacto
+     * @throws IllegalArgumentException si el id, el nombre o el teléfono son inválidos
+     */
+    public Cliente(String id, String nombre, String telefono, String email) {
+        if (id == null || id.trim().isEmpty()) {
+            throw new IllegalArgumentException("El id del cliente no puede estar vacío");
+        }
         if (nombre == null || nombre.trim().isEmpty()) {
             throw new IllegalArgumentException("El nombre del cliente no puede estar vacío");
         }
         if (telefono == null || telefono.trim().isEmpty()) {
             throw new IllegalArgumentException("El teléfono del cliente no puede estar vacío");
         }
-        this.id = UUID.randomUUID().toString();
+        this.id = id;
         this.nombre = nombre;
         this.telefono = telefono;
         this.email = email;
