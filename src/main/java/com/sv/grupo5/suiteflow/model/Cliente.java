@@ -24,19 +24,14 @@ public class Cliente implements Serializable {
      * @param nombre   nombre completo del cliente
      * @param telefono número de teléfono de contacto
      * @param email    correo electrónico de contacto
-     * @throws IllegalArgumentException si el nombre o teléfono son inválidos
+     * @throws IllegalArgumentException si algún dato tiene formato inválido
      */
     public Cliente(String nombre, String telefono, String email) {
-        if (nombre == null || nombre.trim().isEmpty()) {
-            throw new IllegalArgumentException("El nombre del cliente no puede estar vacío");
-        }
-        if (telefono == null || telefono.trim().isEmpty()) {
-            throw new IllegalArgumentException("El teléfono del cliente no puede estar vacío");
-        }
         this.id = UUID.randomUUID().toString();
-        this.nombre = nombre;
-        this.telefono = telefono;
-        this.email = email;
+        // Llamamos a los setters para aprovechar las validaciones centralizadas
+        setNombre(nombre);
+        setTelefono(telefono);
+        setEmail(email);
     }
 
     public String getId() {
@@ -48,7 +43,12 @@ public class Cliente implements Serializable {
     }
 
     public void setNombre(String nombre) {
-        this.nombre = nombre;
+        // Solo permite letras (incluyendo tildes y ñ) y espacios. Entre 3 y 50 caracteres.
+        if (nombre == null || !nombre.matches("^[a-zA-ZáéíóúÁÉÍÓÚñÑ\\s]{3,50}$")) {
+            throw new IllegalArgumentException(
+                    "Error: El nombre solo puede contener letras y espacios (mínimo 3 caracteres).");
+        }
+        this.nombre = nombre.trim();
     }
 
     public String getTelefono() {
@@ -56,7 +56,12 @@ public class Cliente implements Serializable {
     }
 
     public void setTelefono(String telefono) {
-        this.telefono = telefono;
+        // Valida que sean exactamente 8 números sin espacios ni letras.
+        if (telefono == null || !telefono.matches("^\\d{8}$")) {
+            throw new IllegalArgumentException(
+                    "Error: El teléfono debe contener exactamente 8 números.");
+        }
+        this.telefono = telefono.trim();
     }
 
     public String getEmail() {
@@ -64,7 +69,12 @@ public class Cliente implements Serializable {
     }
 
     public void setEmail(String email) {
-        this.email = email;
+        // Patrón estándar para validar correos electrónicos
+        if (email == null || !email.matches("^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,6}$")) {
+            throw new IllegalArgumentException(
+                    "Error: El correo no tiene un formato válido (ejemplo: usuario@correo.com).");
+        }
+        this.email = email.trim();
     }
 
     @Override

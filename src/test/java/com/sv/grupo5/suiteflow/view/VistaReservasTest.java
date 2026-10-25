@@ -153,6 +153,6 @@ class VistaReservasTest {
     void cancelarInexistente() throws Exception {
         String salida = ejecutar("3", "no-existe", "5");
 
-        assertTrue(salida.contains("No se encontr"));
+        assertTrue(salida.contains("No se encontro"));
     }
 }
