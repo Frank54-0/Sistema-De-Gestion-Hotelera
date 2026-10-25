@@ -11,19 +11,19 @@ class ClienteTest {
     @Test
     @DisplayName("Un cliente válido conserva sus datos y recibe un id")
     void clienteValido() {
-        Cliente cliente = new Cliente("Juan Pérez", "7777-1234", "juan@example.com");
+        Cliente cliente = new Cliente("Juan Pérez", "77771234", "juan@example.com");
 
         assertNotNull(cliente.getId());
         assertEquals("Juan Pérez", cliente.getNombre());
-        assertEquals("7777-1234", cliente.getTelefono());
+        assertEquals("77771234", cliente.getTelefono());
         assertEquals("juan@example.com", cliente.getEmail());
     }
 
     @Test
     @DisplayName("Dos clientes distintos reciben ids distintos")
     void idsUnicos() {
-        Cliente a = new Cliente("Ana", "7777-0001", "a@x.com");
-        Cliente b = new Cliente("Ana", "7777-0001", "a@x.com");
+        Cliente a = new Cliente("Ana", "77770001", "a@x.com");
+        Cliente b = new Cliente("Ana", "77770001", "a@x.com");
 
         assertNotEquals(a.getId(), b.getId());
     }
@@ -31,9 +31,9 @@ class ClienteTest {
     @Test
     @DisplayName("El nombre no puede ser null, vacío ni solo espacios")
     void rechazaNombreInvalido() {
-        assertThrows(IllegalArgumentException.class, () -> new Cliente(null, "7777-1234", "a@x.com"));
-        assertThrows(IllegalArgumentException.class, () -> new Cliente("", "7777-1234", "a@x.com"));
-        assertThrows(IllegalArgumentException.class, () -> new Cliente("   ", "7777-1234", "a@x.com"));
+        assertThrows(IllegalArgumentException.class, () -> new Cliente(null, "77771234", "a@x.com"));
+        assertThrows(IllegalArgumentException.class, () -> new Cliente("", "77771234", "a@x.com"));
+        assertThrows(IllegalArgumentException.class, () -> new Cliente("   ", "77771234", "a@x.com"));
     }
 
     @Test
@@ -47,14 +47,14 @@ class ClienteTest {
     @Test
     @DisplayName("Los setters actualizan los datos de contacto")
     void settersActualizan() {
-        Cliente cliente = new Cliente("Ana", "7777-0001", "a@x.com");
+        Cliente cliente = new Cliente("Ana", "77770001", "a@x.com");
 
         cliente.setNombre("Ana María");
-        cliente.setTelefono("7777-0002");
+        cliente.setTelefono("77770002");
         cliente.setEmail("nuevo@x.com");
 
         assertEquals("Ana María", cliente.getNombre());
-        assertEquals("7777-0002", cliente.getTelefono());
+        assertEquals("77770002", cliente.getTelefono());
         assertEquals("nuevo@x.com", cliente.getEmail());
     }
 }

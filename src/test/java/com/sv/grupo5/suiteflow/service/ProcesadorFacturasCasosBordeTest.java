@@ -20,7 +20,7 @@ import static org.junit.jupiter.api.Assertions.*;
 class ProcesadorFacturasCasosBordeTest {
 
     private Factura nuevaFactura() {
-        Cliente cliente = new Cliente("Juan Pérez", "7777-1234", "juan@example.com");
+        Cliente cliente = new Cliente("Juan Pérez", "77771234", "juan@example.com");
         Date entrada = new Date();
         Date salida = new Date(entrada.getTime() + 86_400_000L);
         Reserva reserva = new Reserva(cliente, new HabitacionSencilla(101, 100.0), entrada, salida);

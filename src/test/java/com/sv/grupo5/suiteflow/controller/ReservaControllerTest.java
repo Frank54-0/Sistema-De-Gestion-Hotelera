@@ -46,7 +46,7 @@ class ReservaControllerTest {
     }
 
     private NuevaReservaDTO datos(String nombre, int habitacion) {
-        return new NuevaReservaDTO(nombre, "7777-1234", "cliente@example.com", habitacion, entrada, salida);
+        return new NuevaReservaDTO(nombre, "77771234", "cliente@example.com", habitacion, entrada, salida);
     }
 
     @Test
@@ -121,7 +121,7 @@ class ReservaControllerTest {
     @DisplayName("Fechas incoherentes se rechazan y no ocupan la habitación")
     void fechasIncoherentes() {
         NuevaReservaDTO alReves = new NuevaReservaDTO(
-                "Ana López", "7777-1234", "a@x.com", 101, salida, entrada);
+                "Ana López", "77771234", "a@x.com", 101, salida, entrada);
 
         assertThrows(IllegalArgumentException.class, () -> controller.crearReserva(alReves));
 

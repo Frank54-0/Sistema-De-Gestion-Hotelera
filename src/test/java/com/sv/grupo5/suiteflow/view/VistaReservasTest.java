@@ -85,8 +85,8 @@ class VistaReservasTest {
     @Test
     @DisplayName("Crear una reserva muestra el resumen y luego aparece en las activas")
     void crearReservaYVerla() throws Exception {
-        String salida = ejecutar("2", "Ana Lopez", "7777-1234", "ana@example.com",
-                "101", "20/10/2026", "22/10/2026", "4", "5");
+        String salida = ejecutar("2", "Ana Lopez", "77771234", "ana@example.com",
+                "101", "20/10/2027", "22/10/2027", "4", "5");
 
         assertTrue(salida.contains("Ana Lopez"));
         assertTrue(salida.contains("101 (HabitacionSencilla)"));
@@ -96,7 +96,7 @@ class VistaReservasTest {
     @Test
     @DisplayName("Un número de habitación no numérico se rechaza con un mensaje")
     void numeroNoNumerico() throws Exception {
-        String salida = ejecutar("2", "Ana Lopez", "7777-1234", "ana@example.com", "abc", "5");
+        String salida = ejecutar("2", "Ana Lopez", "77771234", "ana@example.com", "abc", "5");
 
         assertTrue(salida.contains("entero"));
     }
@@ -104,7 +104,7 @@ class VistaReservasTest {
     @Test
     @DisplayName("Una fecha con formato incorrecto se rechaza con un mensaje")
     void fechaConFormatoIncorrecto() throws Exception {
-        String salida = ejecutar("2", "Ana Lopez", "7777-1234", "ana@example.com",
+        String salida = ejecutar("2", "Ana Lopez", "77771234", "ana@example.com",
                 "101", "2026-10-20", "5");
 
         assertTrue(salida.contains("La fecha debe tener el formato"));
@@ -113,8 +113,8 @@ class VistaReservasTest {
     @Test
     @DisplayName("Una fecha inexistente (31/02) se rechaza porque el formato no es permisivo")
     void fechaInexistente() throws Exception {
-        String salida = ejecutar("2", "Ana Lopez", "7777-1234", "ana@example.com",
-                "101", "31/02/2026", "5");
+        String salida = ejecutar("2", "Ana Lopez", "77771234", "ana@example.com",
+                "101", "31/02/2027", "5");
 
         assertTrue(salida.contains("La fecha debe tener el formato"));
     }
@@ -122,8 +122,8 @@ class VistaReservasTest {
     @Test
     @DisplayName("Reservar una habitación inexistente muestra el motivo")
     void habitacionInexistente() throws Exception {
-        String salida = ejecutar("2", "Ana Lopez", "7777-1234", "ana@example.com",
-                "999", "20/10/2026", "22/10/2026", "5");
+        String salida = ejecutar("2", "Ana Lopez", "77771234", "ana@example.com",
+                "999", "20/10/2027", "22/10/2027", "5");
 
         assertTrue(salida.contains("No se pudo crear la reserva"));
         assertTrue(salida.contains("999"));
@@ -133,8 +133,8 @@ class VistaReservasTest {
     @DisplayName("Reservar dos veces la misma habitación muestra que no está disponible")
     void habitacionOcupada() throws Exception {
         String salida = ejecutar(
-                "2", "Ana Lopez", "7777-1234", "ana@example.com", "101", "20/10/2026", "22/10/2026",
-                "2", "Luis Mena", "7777-5678", "luis@example.com", "101", "20/10/2026", "22/10/2026",
+                "2", "Ana Lopez", "77771234", "ana@example.com", "101", "20/11/2027", "22/11/2027",
+                "2", "Luis Mena", "77775678", "luis@example.com", "101", "20/11/2027", "22/11/2027",
                 "5");
 
         assertTrue(salida.contains("no disponible: "));
@@ -143,7 +143,7 @@ class VistaReservasTest {
     @Test
     @DisplayName("Un nombre vacío se rechaza con el mensaje del modelo")
     void nombreVacio() throws Exception {
-        String salida = ejecutar("2", "", "7777-1234", "a@x.com", "101", "20/10/2026", "22/10/2026", "5");
+        String salida = ejecutar("2", "", "77771234", "a@x.com", "101", "20/10/2027", "22/10/2027", "5");
 
         assertTrue(salida.contains("No se pudo crear la reserva"));
     }
@@ -151,8 +151,8 @@ class VistaReservasTest {
     @Test
     @DisplayName("Cancelar un id inexistente avisa que no se encontró")
     void cancelarInexistente() throws Exception {
-        String salida = ejecutar("3", "no-existe", "5");
+        String salida = ejecutar("3", "no existe", "5");
 
-        assertTrue(salida.contains("No se encontro"));
+        assertTrue(salida.contains("No se encontró una reserva activa con ese ID."));
     }
 }

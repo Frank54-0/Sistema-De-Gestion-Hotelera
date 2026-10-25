@@ -19,7 +19,7 @@ import static org.junit.jupiter.api.Assertions.*;
 class ReservaEnlaceTest {
 
     private Reserva nuevaReserva() {
-        Cliente cliente = new Cliente("Juan Pérez", "7777-1234", "juan@example.com");
+        Cliente cliente = new Cliente("Juan Pérez", "77771234", "juan@example.com");
         Habitacion habitacion = new HabitacionSencilla(101, 100.0);
         Date entrada = new Date();
         Date salida = new Date(entrada.getTime() + 86_400_000L);
@@ -40,7 +40,7 @@ class ReservaEnlaceTest {
     @Test
     @DisplayName("No se puede crear una reserva sin habitación")
     void rechazaHabitacionNull() {
-        Cliente cliente = new Cliente("Juan Pérez", "7777-1234", "juan@example.com");
+        Cliente cliente = new Cliente("Juan Pérez", "77771234", "juan@example.com");
         Date entrada = new Date();
         Date salida = new Date(entrada.getTime() + 86_400_000L);
 

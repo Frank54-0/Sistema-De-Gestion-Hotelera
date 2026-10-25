@@ -21,7 +21,7 @@ class ClienteArchivoDAOTest extends ArchivoDAOContrato<Cliente, String> {
 
     @Override
     protected Cliente nueva(int n) {
-        return new Cliente("Cliente " + n, "7777-" + (1000 + n), "c" + n + "@ejemplo.com");
+        return new Cliente("Cliente Prueba", String.valueOf(77771000 + n), "c" + n + "@ejemplo.com");
     }
 
     @Override
@@ -48,8 +48,8 @@ class ClienteArchivoDAOTest extends ArchivoDAOContrato<Cliente, String> {
 
         Cliente cargado = dao.buscarPorId(c.getId()).get();
 
-        assertEquals("Cliente 1", cargado.getNombre());
-        assertEquals("7777-1001", cargado.getTelefono());
+        assertEquals("Cliente Prueba", cargado.getNombre());
+        assertEquals("77771001", cargado.getTelefono());
         assertEquals("c1@ejemplo.com", cargado.getEmail());
     }
 }

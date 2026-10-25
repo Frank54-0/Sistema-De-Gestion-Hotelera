@@ -11,7 +11,7 @@ import static org.junit.jupiter.api.Assertions.*;
 /** Contrato CRUD y garantías de archivo aplicados a ReservaArchivoDAO. */
 class ReservaArchivoDAOTest extends ArchivoDAOContrato<Reserva, String> {
 
-    private final Cliente cliente = new Cliente("Juan Pérez", "7777-1234", "juan@example.com");
+    private final Cliente cliente = new Cliente("Juan Pérez", "77771234", "juan@example.com");
 
     @Override
     protected CrudDAO<Reserva, String> crearDAO() {
