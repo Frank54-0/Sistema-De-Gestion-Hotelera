@@ -43,12 +43,12 @@ public class Cliente implements Serializable {
     }
 
     public void setNombre(String nombre) {
-        // Solo permite letras (incluyendo tildes y ñ) y espacios. Entre 3 y 50 caracteres.
-        if (nombre == null || !nombre.matches("^[a-zA-ZáéíóúÁÉÍÓÚñÑ\\s]{3,50}$")) {
+        String limpio = (nombre == null) ? null : nombre.trim();
+        if (limpio == null || !limpio.matches("^[a-zA-ZáéíóúÁÉÍÓÚñÑ\\s]{3,50}$")) {
             throw new IllegalArgumentException(
                     "Error: El nombre solo puede contener letras y espacios (mínimo 3 caracteres).");
         }
-        this.nombre = nombre.trim();
+        this.nombre = limpio;
     }
 
     public String getTelefono() {
