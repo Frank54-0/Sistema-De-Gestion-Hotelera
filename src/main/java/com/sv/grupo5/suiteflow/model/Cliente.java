@@ -17,7 +17,7 @@ public class Cliente implements Serializable {
     // Letras (con tildes y ñ) y espacios, de 3 a 50 caracteres.
     private static final Pattern PATRON_NOMBRE = Pattern.compile("^[\\p{L} ]{3,50}$");
     // Exactamente 8 dígitos.
-    private static final Pattern PATRON_TELEFONO = Pattern.compile("^\\d{8}$");
+    private static final Pattern PATRON_TELEFONO = Pattern.compile("^\\+?\\d{8,15}$");
     // usuario@dominio.ext, con extensión de al menos 2 letras.
     private static final Pattern PATRON_EMAIL =
             Pattern.compile("^[\\w.+-]+@[A-Za-z0-9-]+(\\.[A-Za-z0-9-]+)*\\.[A-Za-z]{2,}$");
@@ -121,7 +121,7 @@ public class Cliente implements Serializable {
             throw new IllegalArgumentException("El teléfono del cliente no puede estar vacío");
         }
         if (!PATRON_TELEFONO.matcher(telefono).matches()) {
-            throw new IllegalArgumentException("El teléfono debe tener exactamente 8 dígitos");
+            throw new IllegalArgumentException("El teléfono debe tener 8 dígitos, con prefijo 503 opcional (ej. 75375027 o +50375375027)");
         }
         return telefono;
     }
