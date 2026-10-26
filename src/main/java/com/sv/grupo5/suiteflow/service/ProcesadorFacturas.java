@@ -2,6 +2,7 @@ package com.sv.grupo5.suiteflow.service;
 
 import com.sv.grupo5.suiteflow.dao.FacturaArchivoDAO;
 import com.sv.grupo5.suiteflow.dao.FacturaDAO;
+import com.sv.grupo5.suiteflow.exception.PersistenciaException;
 import com.sv.grupo5.suiteflow.model.Factura;
 
 import java.util.LinkedList;
@@ -114,18 +115,22 @@ public class ProcesadorFacturas extends Thread {
      * @param factura factura a procesar
      */
     private void procesarFactura(Factura factura) {
-        try {
-            System.out.println("[ProcesadorFacturas] Procesando factura " + factura.getId() + "...");
-            Thread.sleep(DURACION_PROCESO_MS);
-            factura.generarFactura();
-            facturaDAO.guardar(factura);
-            registrarProcesada();
-            System.out.println("[ProcesadorFacturas] Factura " + factura.getId()
-                    + " procesada. Total: $" + String.format("%.2f", factura.getTotal()));
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-        }
+    try {
+        System.out.println("[ProcesadorFacturas] Procesando factura " + factura.getId() + "...");
+        Thread.sleep(DURACION_PROCESO_MS);
+        factura.generarFactura();
+        facturaDAO.guardar(factura);
+        registrarProcesada();
+        System.out.println("[ProcesadorFacturas] Factura " + factura.getId()
+                + " procesada. Total: $" + String.format("%.2f", factura.getTotal()));
+    } catch (InterruptedException e) {
+        Thread.currentThread().interrupt();
+    // PersistenciaException se lanza si no se pudo guardar la factura en el DAO.
+    } catch (PersistenciaException e) {
+        System.out.println("[ProcesadorFacturas] No se pudo guardar la factura "
+                + factura.getId() + ": " + e.getMessage());
     }
+}
 
     /** Incrementa el contador de facturas procesadas de forma segura. */
     private synchronized void registrarProcesada() {

@@ -3,6 +3,7 @@ package com.sv.grupo5.suiteflow;
 import com.sv.grupo5.suiteflow.config.DataSourceConfig;
 import com.sv.grupo5.suiteflow.config.InicializadorBaseDatos;
 import com.sv.grupo5.suiteflow.controller.ReservaController;
+import com.sv.grupo5.suiteflow.dao.FacturaJdbcDAO;
 import com.sv.grupo5.suiteflow.dao.HabitacionJdbcDAO;
 import com.sv.grupo5.suiteflow.dao.ReservaJdbcDAO;
 import com.sv.grupo5.suiteflow.dto.NuevaReservaDTO;
@@ -66,7 +67,7 @@ public class Main {
         System.out.println("   Reservas: " + gestorRes.obtenerTotalReservas() + "\n");
 
         // Hilo en segundo plano que procesa facturas.
-        ProcesadorFacturas procesadorFacturas = new ProcesadorFacturas();
+        ProcesadorFacturas procesadorFacturas = new ProcesadorFacturas(new FacturaJdbcDAO(dataSource));
         procesadorFacturas.start();
 
         if (demo) {
