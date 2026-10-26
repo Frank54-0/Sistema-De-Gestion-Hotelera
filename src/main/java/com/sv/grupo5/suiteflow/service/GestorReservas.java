@@ -39,6 +39,7 @@ public class GestorReservas {
     private final List<Reserva> reservas;
     private final ReservaDAO reservaDAO;
     private final GestorHabitaciones gestorHabitaciones;
+    private static final int MAX_NOCHES = 30;
 
     /**
      * Crea el gestor con el DAO de archivos por defecto ({@code datos/reservas.dat}).
@@ -278,6 +279,14 @@ public class GestorReservas {
         if (fechaEntrada.before(hoy.getTime())) {
             throw new IllegalArgumentException(
                     "La fecha de entrada no puede ser en el pasado.");
+        }
+        // 4. LIMITAR LA DURACIÓN MÁXIMA DE LA RESERVA
+        long noches = java.time.temporal.ChronoUnit.DAYS.between(
+                fechaEntrada.toInstant().atZone(java.time.ZoneId.systemDefault()).toLocalDate(),
+                fechaSalida.toInstant().atZone(java.time.ZoneId.systemDefault()).toLocalDate());
+        if (noches > MAX_NOCHES) {
+            throw new IllegalArgumentException(
+                    "La reserva no puede superar " + MAX_NOCHES + " noche(s). Se pidieron " + noches + ".");
         }
     }
 }
