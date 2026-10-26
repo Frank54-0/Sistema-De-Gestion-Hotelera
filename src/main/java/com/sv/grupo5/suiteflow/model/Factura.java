@@ -41,6 +41,24 @@ public class Factura implements Serializable {
         this.estado = PENDIENTE;
     }
 
+    // Constructor adicional para reconstruir la factura desde la base de datos, conservando su id y estado.
+    public Factura(String id, Reserva reserva, double total, String formaPago, String estado) {
+        if (id == null || id.trim().isEmpty()) {
+            throw new IllegalArgumentException("El id de la factura no puede estar vacío");
+        }
+        if (reserva == null) {
+            throw new IllegalArgumentException("La factura requiere una reserva");
+        }
+        if (!PENDIENTE.equals(estado) && !PROCESADA.equals(estado)) {
+            throw new IllegalArgumentException("Estado de factura inválido: '" + estado + "'");
+        }
+        this.id = id;
+        this.reserva = reserva;
+        this.total = total;
+        this.formaPago = formaPago;
+        this.estado = estado;
+    }
+
     /**
      * Obtiene el estado de procesamiento de la factura.
      *
