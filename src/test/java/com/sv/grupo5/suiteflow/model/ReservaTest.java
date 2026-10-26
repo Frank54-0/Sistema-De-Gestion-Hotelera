@@ -1,6 +1,5 @@
 package com.sv.grupo5.suiteflow.model;
 
-import com.sv.grupo5.suiteflow.model.*;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -15,7 +14,7 @@ import static org.junit.jupiter.api.Assertions.*;
 class ReservaTest {
 
     private Reserva nuevaReserva() {
-        Cliente cliente = new Cliente("Juan Pérez", "7777-1234", "juan@example.com");
+        Cliente cliente = new Cliente("Juan Pérez", "77771234", "juan@example.com");
         Habitacion habitacion = new HabitacionSencilla(101, 100.0);
         Date entrada = new Date();
         Date salida = new Date(entrada.getTime() + 86_400_000L);
