@@ -5,18 +5,18 @@ Proyecto del curso Programación II (UEES), Grupo 5. Sistema para gestionar habi
 ## Integrantes
 
 Nombre - Rol 
-Jireh Alexander Trigueros Pérez - Product Owner 
-Carla Vanesa Franco Avelar - Scrum Master 
-Jesús Roberto Sánchez Orellana - Architect 
-Franklin Martin Fuentes Chávez - Backend 
-Alessandro Imanol Ramírez Moran - Full stack 
-Gabriela Michelle Pérez Portillo - Full stack 
-Christian Alessandro Marín Sandoval - Frontend 
-Salvador Ernesto Rodríguez Galdamez - Base de datos 
-Gabriel Alejandro Fuentes Chavarría - QA 
-Emerson Eduardo Candido Joya - QA 
-Cindy Shaiel Canales Campos - Business Analyst 
-Julio Cesar Pérez Salazar - Business Analyst
+- Jireh Alexander Trigueros Pérez - Product Owner 
+- Carla Vanesa Franco Avelar - Scrum Master 
+- Jesús Roberto Sánchez Orellana - Architect 
+- Franklin Martin Fuentes Chávez - Backend 
+- Alessandro Imanol Ramírez Moran - Full stack
+- Gabriela Michelle Pérez Portillo - Full stack 
+- Christian Alessandro Marín Sandoval - Frontend 
+- Salvador Ernesto Rodríguez Galdamez - Base de datos 
+- Gabriel Alejandro Fuentes Chavarría - QA
+- Emerson Eduardo Candido Joya - QA
+- Cindy Shaiel Canales Campos - Business Analyst
+- Julio Cesar Pérez Salazar - Business Analyst
 
 ## Tecnologías
 
