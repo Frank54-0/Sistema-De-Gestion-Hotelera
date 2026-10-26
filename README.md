@@ -28,10 +28,11 @@ Nombre - Rol
 
 ## Requisitos
 
+- Tener **XAMPP instalado**
+- Tener el servicio **MySQL iniciado** en el panel de control de XAMPP (botón "Start" junto a MySQL)
 - JDK 17 o superior
-- Maven 3.8 o superior
-- MySQL o MariaDB encendido (por ejemplo XAMPP) para ejecutar la aplicación. Las pruebas no lo necesitan
 
+Con eso, al ejecutar la clase `Main` el programa se conecta a la base de datos y **muestra el menú en consola**.
 ## Configuración de la base de datos
 
 1. Encender MySQL o MariaDB (puerto 3306)
